@@ -30,7 +30,6 @@ class AuthController extends Controller
             return response()->json([
                 'token' => $token,
                 'message' => 'Successfully logged in',
-                'user' => $user
             ]);
         }
 
@@ -87,5 +86,28 @@ class AuthController extends Controller
             DB::rollback();
             return response()->json(['message' => 'Registration failed', 'error' => $e->getMessage()], 500);
         }
+    }
+
+    public function userData()
+    {
+        $user = Auth::user()->load('profile');
+        if (empty($user)) {
+            return unauthorizedResponse("Sorry, you are not authorized to use this feature");
+        }
+        return response()->json($user);
+    }
+
+    public function logout(Request $request)
+    {
+        // Get the currently authenticated user
+        $user = Auth::user();
+
+        if ($user) {
+            // Revoke all tokens
+            $user->tokens()->delete();
+        }
+
+        // Return a success response
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }

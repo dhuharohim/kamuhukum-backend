@@ -21,7 +21,6 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
         'email',
         'username',
         'password',
@@ -47,7 +46,7 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-      /**
+    /**
      * Activity log options.
      *
      * @return LogOptions
@@ -57,7 +56,8 @@ class User extends Authenticatable
         return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
-    public function profile() {
-        return $this->hasOne(Profile::class);
+    public function profile()
+    {
+        return $this->hasOne(ProfileAuthor::class);
     }
 }

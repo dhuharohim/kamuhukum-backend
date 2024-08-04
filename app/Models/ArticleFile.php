@@ -5,21 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-class Profile extends Model
+class ArticleFile extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
     protected $fillable = [
-        'user_id',
-        'first_name',
-        'last_name',
-        'affiliation',
-        'country',
-        'is_data_collected'
+        'article_id',
+        'file_name',
+        'file_path',
+        'type',
     ];
 
-    
     /**
      * Activity log options.
      *
@@ -30,8 +29,8 @@ class Profile extends Model
         return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
-    public function user(): BelongsTo
+    public function article(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Article::class, 'article_id', 'id');
     }
 }

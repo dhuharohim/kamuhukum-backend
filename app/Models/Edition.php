@@ -13,9 +13,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Edition extends Model
 {
     use HasFactory, SoftDeletes, LogsActivity;
-    
+
     protected $fillable = [
         'name_edition',
+        'edition_for',
         'volume',
         'issue',
         'description',
@@ -23,14 +24,14 @@ class Edition extends Model
         'status',
         'slug',
         'year',
-        'img'
+        'img_path'
     ];
 
     protected $appends = [
         'signed_edition_image',
         'publish_date_formatted'
     ];
-    
+
 
     /**
      * Activity log options.
@@ -42,23 +43,24 @@ class Edition extends Model
         return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
-    public function articles() : HasMany
+    public function articles(): HasMany
     {
         return $this->hasMany(Article::class, 'edition_id', 'id');
     }
 
-    public function getSignedEditionImageAttribute() {
-        if(empty($this->img))
+    public function getSignedEditionImageAttribute()
+    {
+        if (empty($this->img_path))
             return;
 
-        return config('app.url').$this->img;
+        return config('app.url') . $this->img_path;
     }
 
-    public function getPublishDateFormattedAttribute() {
-        if(empty($this->publish_date))
+    public function getPublishDateFormattedAttribute()
+    {
+        if (empty($this->publish_date))
             return;
 
         return Carbon::parse($this->publish_date)->format('d-m-Y');
-    }}
-
-
+    }
+}

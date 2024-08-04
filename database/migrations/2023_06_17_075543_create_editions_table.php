@@ -14,9 +14,12 @@ return new class extends Migration
         Schema::create('editions', function (Blueprint $table) {
             $table->id();
             $table->string('name_edition')->nullable()->index();
+            $table->enum('edition_for', ['law', 'economic']);
             $table->string('slug')->nullable()->index();
+            $table->string('img_path')->nullable();
             $table->integer('volume')->nullable()->index();
             $table->integer('issue')->nullable()->index();
+            $table->year('year')->nullable()->index();
             $table->text('description')->nullable();
             $table->timestamp('publish_date')->nullable()->index();
             $table->enum('status', ['Draft', 'Archive', 'Published'])->default('Draft')->index();

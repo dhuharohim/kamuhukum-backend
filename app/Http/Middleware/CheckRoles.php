@@ -16,10 +16,10 @@ class CheckRoles
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if(Auth::check() && Auth::user()->hasRole($roles)){
+        if (Auth::check() && Auth::user()->hasRole($roles)) {
             return $next($request);
         }
-        
+
         return unauthorizedResponse();
     }
 }

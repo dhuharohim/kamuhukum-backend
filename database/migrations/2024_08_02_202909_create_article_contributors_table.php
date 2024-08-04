@@ -11,23 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('profile_authors', function (Blueprint $table) {
+        Schema::create('article_contributors', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->enum('author_type', ['law', 'economic'])->index();
+            $table->unsignedBigInteger('article_id')->index();
+            $table->enum('contributor_role', ['author', 'translator'])->index();
             $table->string('given_name', 50)->nullable();
             $table->string('family_name', 50)->nullable();
             $table->string('phone', 20)->nullable();
-            $table->string('email', 20)->nullable();
+            $table->string('contact', 255)->nullable();
             $table->string('preferred_name', 50)->nullable();
             $table->string('affilation', 100)->nullable();
             $table->string('country', 50)->nullable();
             $table->string('img_url', 50)->nullable();
             $table->string('homepage_url', 50)->nullable();
-            $table->string('orchid_id', 19)->nullable();
+            $table->string('orcid_id', 19)->nullable();
             $table->text('mailing_address')->nullable();
             $table->text('bio_statement')->nullable();
             $table->text('reviewing_interest')->nullable();
+            $table->tinyInteger('principal_contact')->default(0);
+            $table->tinyInteger('in_browse_list')->default(0);
             $table->timestamps();
         });
     }
@@ -37,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('profile_users');
+        Schema::dropIfExists('article_contributors');
     }
 };

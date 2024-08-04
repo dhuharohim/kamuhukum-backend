@@ -52,7 +52,7 @@ class AuthController extends Controller
                 'password' => 'required',
                 'first_name' => 'required',
                 'last_name' => 'required',
-                'affiliation' => 'required',
+                'affilation' => 'required',
                 'country' => 'required'
             ],
             [
@@ -62,7 +62,7 @@ class AuthController extends Controller
                 'username.unique' => 'Username has been taken.',
                 'first_name.required' => 'First name is required',
                 'last_name.required' => 'Last name is required',
-                'affiliation.required' => 'Affiliation is required',
+                'affilation.required' => 'affilation is required',
                 'country.required' => 'Country is required'
             ]
         );
@@ -98,7 +98,7 @@ class AuthController extends Controller
                         'user_id' => $userId,
                         'first_name' => $request->first_name,
                         'last_name' => $request->last_name,
-                        'affiliation' => $request->affiliation,
+                        'affilation' => $request->affilation,
                         'country' => $request->country,
                         'is_data_collected' => $request->is_data_collected == 'true' ? true : false,
                     ]);
@@ -108,14 +108,5 @@ class AuthController extends Controller
             }
             return successResponse([], 'Akun berhasil dibuat');
         }
-    }
-
-    public function userData($apiToken) {
-        $user = User::where('api_token', $apiToken)->with('profile')->first();
-
-        if(empty($user)) { 
-            return unauthorizedResponse("Sorry, you are not authorized to use this feature");
-        }
-        return response()->json($user);
     }
 }

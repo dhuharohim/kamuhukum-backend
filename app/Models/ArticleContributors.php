@@ -7,26 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class ProfileAuthor extends Model
+class ArticleContributors extends Model
 {
     use HasFactory, LogsActivity;
 
     protected $fillable = [
-        'user_id',
-        'author_type',
+        'article_id',
+        'contributor_role',
         'given_name',
         'family_name',
+        'contact',
         'phone',
-        'email',
         'preferred_name',
         'affilation',
         'country',
         'img_url',
         'homepage_url',
-        'orchid_id',
+        'orcid_id',
         'mailing_address',
         'bio_statement',
-        'reviewing_interest'
+        'reviewing_interest',
+        'principal_contact',
+        'in_browse_list'
     ];
 
     /**
@@ -37,10 +39,5 @@ class ProfileAuthor extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logAll()->logOnlyDirty();
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
     }
 }
