@@ -13,12 +13,14 @@ Route::prefix('edition')->group(function () {
 });
 
 Route::get('article/{from}/{slug}/{cred?}', [JournalController::class, 'showArticle']);
-Route::get('search/article', [JournalController::class, 'searchArticle']);
+Route::get('search/article/{from}', [JournalController::class, 'searchArticle']);
 
 Route::prefix('announcements')->group(function () {
-    Route::get('', [AnnouncementsController::class, 'index']);
-    Route::get('{slug}', [AnnouncementsController::class, 'view']);
+    Route::get('{from}', [AnnouncementsController::class, 'index']);
+    Route::get('{from}/{slug}', [AnnouncementsController::class, 'view']);
 });
+
+Route::get('home/{from}', [JournalController::class, 'getHomeData']);
 
 Route::middleware(['auth:sanctum', 'check:author_law,author_economic'])->group(function () {
     Route::prefix('user')->group(function () {

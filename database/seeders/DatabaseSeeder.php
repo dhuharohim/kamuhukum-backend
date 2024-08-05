@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\Announcement;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -20,6 +22,15 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call([
             RoleSeeder::class,
+            AnnouncementsTableSeeder::class,
+            EditionsTableSeeder::class,
+            ArticlesTableSeeder::class,
+            ArticleContributorsTableSeeder::class,
+            ArticleKeywordsTableSeeder::class,
+            ArticleReferencesTableSeeder::class,
+            ArticleFilesTableSeeder::class,
+
+            // UserAnnouncementTableSeeder::class,
         ]);
     }
 }

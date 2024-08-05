@@ -14,12 +14,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Announcement extends Model
 {
     use HasFactory, SoftDeletes, LogsActivity;
-    
+
     protected $fillable = [
         'edition_id',
-        'announcement_title',
+        'announcement_for',
+        'title',
+        'slug',
+        'description',
         'submission_deadline_date',
         'published_date',
+        'extend_submission_date',
     ];
 
     protected $appends = [
@@ -37,33 +41,37 @@ class Announcement extends Model
         return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
-    public function edition() : BelongsTo
+    public function edition(): BelongsTo
     {
         return $this->belongsTo(Edition::class, 'edition_id', 'id');
     }
 
-    public function getPublishedDateFormattedAttribute() {
-        if(empty($this->published_date))
+    public function getPublishedDateFormattedAttribute()
+    {
+        if (empty($this->published_date))
             return;
 
         return Carbon::parse($this->published_date)->format('d-m-Y');
     }
 
-    public function getSubmissionDeadlineFormattedAttribute() {
-        if(empty($this->submission_deadline_date))
+    public function getSubmissionDeadlineFormattedAttribute()
+    {
+        if (empty($this->submission_deadline_date))
             return;
 
         return Carbon::parse($this->submission_deadline_date)->format('d-m-Y');
     }
 
-    public function getCreatedAtFormattedAttribute() {
-        if(empty($this->created_at))
+    public function getCreatedAtFormattedAttribute()
+    {
+        if (empty($this->created_at))
             return;
 
         return Carbon::parse($this->created_at)->format('d-m-Y');
     }
 
-    public function criteria() {
+    public function criterias()
+    {
         return $this->hasMany(AnnouncementCriteria::class);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\User\Journal;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleFileRequest;
+use App\Models\Announcement;
 use App\Models\Article;
 use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
@@ -130,31 +131,35 @@ class JournalController extends Controller
         return successResponse($article);
     }
 
-    public function searchArticle(Request $request)
+    public function searchArticle($from, Request $request)
     {
         $articles = Article::query();
-
+        $articles->where('article_for', $from);
         if (!empty($request->nameArticle)) {
             $articles->where('article_title', 'LIKE', '%' . $request->nameArticle . '%');
         }
 
         if (!empty($request->nameAuthor)) {
-            $articles->where('author', 'LIKE', '%' . $request->nameAuthor . '%');
+            $nameAuthor = $request->nameAuthor;
+            $articles->whereHas('authors', function ($query) use ($nameAuthor) {
+                $query->where('given_name', 'LIKE', '%' . $nameAuthor . '%')
+                    ->orWhere('family_name', 'LIKE', '%' . $nameAuthor . '%');
+            });
         }
 
         if (!empty($request->publishedAfter) && !empty($request->publishedBefore)) {
-            $articles->whereBetween('created_at', [$request->publishedAfter, $request->publishedBefore]);
+            $articles->whereBetween('published_date', [$request->publishedAfter, $request->publishedBefore]);
         } else {
             if (!empty($request->publishedAfter)) {
-                $articles->where('created_at', '>', $request->publishedAfter);
+                $articles->where('published_date', '>', $request->publishedAfter);
             }
 
             if (!empty($request->publishedBefore)) {
-                $articles->where('created_at', '<', $request->publishedBefore);
+                $articles->where('published_date', '<', $request->publishedBefore);
             }
         }
 
-        $result = $articles->get();
+        $result = $articles->with(['authors'])->get();
 
         return successResponse($result);
     }
@@ -429,5 +434,35 @@ class JournalController extends Controller
             DB::rollBack();
             return response()->json(['message' => $e->getMessage(), 'line' => $e->getLine()], 500);
         }
+    }
+
+    public function getHomeData($from)
+    {
+        if (!$from) {
+            return response(['message' => 'Invalid request'], 400);
+        }
+
+        $currentEdition = Edition::where('edition_for', $from)
+            ->where('status', 'Published')
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!empty($currentEdition)) {
+            $artciles = Article::where('edition_id', $currentEdition->id)
+                ->with(['authors'])
+                ->where('article_for', $from)
+                ->where('status', 'production')
+                ->get();
+
+            $currentEdition->articles = $artciles;
+        }
+
+        $announcements = Announcement::with('edition')
+            ->where('announcement_for', $from)
+            ->orderBy('created_at', 'DESC')
+            ->take(4)
+            ->get();
+
+        return response()->json(['current' => $currentEdition, 'announcements' => $announcements]);
     }
 }

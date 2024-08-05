@@ -24,9 +24,11 @@ return new class extends Migration
             $table->enum('status', ['incomplete', 'submission', 'review', 'production'])->default('incomplete')->index();
             $table->text('comments_for_editor')->nullable();
             $table->longText('abstract')->nullable();
-            $table->string('pdf_path')->nullable();
             $table->string('slug')->nullable()->index();
+            $table->unsignedBigInteger('downloaded')->index()->default(0);
             $table->unsignedBigInteger('viewed')->index()->default(0);
+            $table->string('doi_link')->nullable();
+            $table->date('published_date')->nullable()->index();
             $table->softDeletes()->index();
             $table->timestamps();
         });

@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('edition_id')->index()->nullable();
-            $table->string('announcement_title')->index()->nullable();     
-            $table->date('submission_deadline_date')->index()->nullable();
+            $table->enum('announcement_for', ['law', 'economic'])->nullable();
+            $table->string('slug')->index()->nullable();
+            $table->string('title')->nullable();
+            $table->date('submission_deadline_date')->nullable();
             $table->date('published_date')->index()->nullable();
-            $table->longText('announcement_description')->nullable();
+            $table->longText('description')->nullable();
             $table->date('extend_submission_date')->index()->nullable();
             $table->softDeletes();
             $table->timestamps();

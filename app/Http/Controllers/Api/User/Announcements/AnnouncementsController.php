@@ -10,24 +10,30 @@ use Illuminate\Http\Request;
 
 class AnnouncementsController extends Controller
 {
-    public function index() {
-        $announcements = Announcement::with('edition')->whereDate('published_date', ">", Carbon::now()->format('Y-m-d'))->paginate(10);
+    public function index($from)
+    {
+        $announcements = Announcement::with('edition')
+            ->where('announcement_for', $from)
+            ->paginate(10);
 
         $data = [
-            'announcements' => AnnouncementsResource::collection($announcements),
+            'announcements' => $announcements,
             'page' => $announcements->currentPage(),
-            'total' => $announcements->total(),            
+            'total' => $announcements->total(),
         ];
         return successResponse($data);
     }
 
-    public function view($slug)
+    public function view($from, $slug)
     {
-        $annoucement = Announcement::with(['edition', 'criteria'])->where('slug', $slug)->first();
+        $annoucement = Announcement::with(['edition', 'criterias'])
+            ->where('announcement_for', $from)
+            ->where('slug', $slug)->first();
 
-        if(empty($annoucement))
+        if (empty($annoucement)) {
             return recordNotFoundResponse('Announcement not found');
-        
-        return successResponse(new AnnouncementsResource($annoucement));
+        }
+
+        return successResponse($annoucement);
     }
 }
