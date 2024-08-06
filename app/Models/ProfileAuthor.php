@@ -23,7 +23,7 @@ class ProfileAuthor extends Model
         'country',
         'img_url',
         'homepage_url',
-        'orchid_id',
+        'orcid_id',
         'mailing_address',
         'bio_statement',
         'reviewing_interest'

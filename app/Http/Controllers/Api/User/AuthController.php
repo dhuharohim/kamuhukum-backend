@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpKernel\Profiler\Profile;
 
 class AuthController extends Controller
 {
@@ -109,5 +110,88 @@ class AuthController extends Controller
 
         // Return a success response
         return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function editProfile($from, $type, Request $request)
+    {
+        if (!in_array($from, ['law', 'economic'])) {
+            return badRequestResponse();
+        }
+
+        $user = Auth::user();
+        $profile = ProfileAuthor::where('user_id', $user->id)->first();
+        if (empty($profile)) {
+            return recordNotFoundResponse('Profile not found');
+        }
+
+        DB::beginTransaction();
+        try {
+            switch ($type):
+                case 'identity':
+                    $request->validate([
+                        'givenName' => 'required',
+                        'familyName' => 'required'
+                    ]);
+
+                    $profile->update([
+                        'given_name' => request('givenName'),
+                        'family_name' => request('familyName'),
+                        'preferred_name' => request('preferredName') ?? '',
+                    ]);
+                    break;
+                case 'contact':
+                    $request->validate([
+                        'email' => 'required',
+                        'affilation' => 'required',
+                        'country' => 'required'
+                    ]);
+
+                    $profile->update([
+                        'affilation' => request('affilation'),
+                        'country' => request('country'),
+                        'phone' => request('phone') ?? '',
+                        'mailing_address' => request('mailingAddress') ?? '',
+                    ]);
+
+                    $user->email = request('email');
+                    $user->save();
+                    break;
+                case 'public':
+                    $path = null;
+                    if ($request->hasFile('img_url')) {
+                        $path = $request->file('img_url')->store('public/profile_pictures/' . $user->username);
+                    }
+
+                    $profile->update([
+                        'bio_statement' => request('bioStatement'),
+                        'orcid_id' => request('orcidId'),
+                        'homepage_url' => request('homepageUrl'),
+                        'img_url' => $path,
+                    ]);
+                    break;
+                case 'password':
+                    $request->validate([
+                        'currPass' => 'required',
+                        'newPass' => 'required|min:8|confirmed',
+                        'confirmed' => 'required'
+                    ]);
+
+                    if (!Hash::check(request('currPass'), $user->password)) {
+                        return badRequestResponse('Current password is incorrect');
+                    }
+
+                    $user->password = Hash::make(request('newPass'));
+                    $user->save();
+                    break;
+                default:
+                    break;
+            endswitch;
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            return internalErrorResponse($e->getMessage());
+        }
+
+        return successResponse(null, 'Profile updated successfully');
     }
 }
