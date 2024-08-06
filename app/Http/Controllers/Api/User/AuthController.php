@@ -35,7 +35,7 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'message' => 'Unauthorized'
+            'message' => 'Unauthorized bro'
         ], 401);
     }
 
