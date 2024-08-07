@@ -55,7 +55,7 @@ class Edition extends Model
         if (empty($this->img_path))
             return;
 
-        return config('app.url') . '/storage/' . $this->img_path;
+        return config('app.url') . 'storage/' . $this->img_path;
     }
 
     public function getSignedEditionPdfAttribute()
@@ -63,7 +63,7 @@ class Edition extends Model
         if (empty($this->img_path))
             return;
 
-        return config('app.url') . '/storage/' . $this->pdf_path;
+        return config('app.url') . 'storage/' . $this->pdf_path;
     }
 
     public function getPublishDateFormattedAttribute()
