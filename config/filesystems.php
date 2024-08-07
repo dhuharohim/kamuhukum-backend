@@ -39,9 +39,21 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('CDN_URL', env('APP_URL') . '/storage'),
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
+        ],
+
+        'sftp' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_HOST'),
+            'username' => env('SFTP_USERNAME'),
+            'password' => env('SFTP_PASSWORD'),
+            'port' => env('SFTP_PORT', 22),
+            'root' => env('SFTP_ROOT', '/path/to/root'),
+            'url' => env('CDN_URL', 'https://www.cdn.kamuhukumjournal.com'),
+            'visibility' => 'public',
+            'timeout' => 30,
         ],
 
         's3' => [
