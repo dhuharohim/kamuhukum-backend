@@ -52,7 +52,7 @@ return [
             'password' => env('SFTP_PASSWORD'),
 
             // Optional SFTP Settings
-            'port' => env('SFTP_PORT', 22),
+            'port' => (int) env('SFTP_PORT', 22),
             'root' => env('SFTP_ROOT', ''), // Remote directory to start working in
             'timeout' => 30, // Connection timeout in seconds
         ],
