@@ -44,6 +44,19 @@ return [
             'throw' => false,
         ],
 
+        'sftp' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_HOST'),
+
+            'username' => env('SFTP_USERNAME'),
+            'password' => env('SFTP_PASSWORD'),
+
+            // Optional SFTP Settings
+            'port' => env('SFTP_PORT', 22),
+            'root' => env('SFTP_ROOT', ''), // Remote directory to start working in
+            'timeout' => 30, // Connection timeout in seconds
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
