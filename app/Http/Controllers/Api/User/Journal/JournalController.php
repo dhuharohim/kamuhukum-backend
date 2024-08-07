@@ -108,15 +108,15 @@ class JournalController extends Controller
 
     public function showArticle($from, $slug, $cred = null)
     {
-        $relation = ['edition', 'keywords', 'references', 'authors', 'references'];
-        if ($cred) {
-            $user = User::where('email', $cred)->first();
-            if ($user->hasRole('author_' . $from)) {
-                $relation[] = 'files';
-            } else {
-                return unauthorizedResponse();
-            }
-        }
+        $relation = ['edition', 'keywords', 'references', 'authors', 'references', 'files'];
+        // if ($cred) {
+        //     $user = User::where('email', $cred)->first();
+        //     if ($user->hasRole('author_' . $from)) {
+        //         $relation[] = 'files';
+        //     } else {
+        //         return unauthorizedResponse();
+        //     }
+        // }
 
         $article = Article::where('slug', $slug)
             ->where('article_for', $from)
