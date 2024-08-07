@@ -24,11 +24,13 @@ class Edition extends Model
         'status',
         'slug',
         'year',
-        'img_path'
+        'img_path',
+        'pdf_path'
     ];
 
     protected $appends = [
         'signed_edition_image',
+        'signed_edition_pdf',
         'publish_date_formatted'
     ];
 
@@ -53,7 +55,15 @@ class Edition extends Model
         if (empty($this->img_path))
             return;
 
-        return config('app.url') . $this->img_path;
+        return config('app.url') . '/storage/' . $this->img_path;
+    }
+
+    public function getSignedEditionPdfAttribute()
+    {
+        if (empty($this->img_path))
+            return;
+
+        return config('app.url') . '/storage/' . $this->pdf_path;
     }
 
     public function getPublishDateFormattedAttribute()
