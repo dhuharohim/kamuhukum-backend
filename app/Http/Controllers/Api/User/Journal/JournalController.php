@@ -36,7 +36,7 @@ class JournalController extends Controller
             return recordNotFoundResponse('Tidak menemukan edisi terbaru.');
         }
 
-        $relation = ['keywords', 'authors', 'references'];
+        $relation = ['keywords', 'authors', 'references', 'files'];
         // if ($cred) {
         //     $user = User::where('email', $cred)->first();
         //     if ($user->hasRole('author_' . $from)) {
@@ -87,15 +87,15 @@ class JournalController extends Controller
             return recordNotFoundResponse('Tidak menemukan edisi yang terarsip');
         }
 
-        $relation = ['keywords', 'authors', 'references'];
-        if ($cred) {
-            $user = User::where('email', $cred)->first();
-            if ($user->hasRole('author_' . $from)) {
-                $relation[] = 'files';
-            } else {
-                return unauthorizedResponse();
-            }
-        }
+        $relation = ['keywords', 'authors', 'references', 'files'];
+        // if ($cred) {
+        //     $user = User::where('email', $cred)->first();
+        //     if ($user->hasRole('author_' . $from)) {
+        //         $relation[] = 'files';
+        //     } else {
+        //         return unauthorizedResponse();
+        //     }
+        // }
 
         $articles = Article::where('edition_id', $archievedEditions->id)
             ->where('article_for', $from)
