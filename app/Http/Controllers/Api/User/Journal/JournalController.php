@@ -77,7 +77,7 @@ class JournalController extends Controller
     {
         $archievedEditions = Edition::where('edition_for', $from)
             ->where('slug', $slug)
-            ->where('status', 'Archive')
+            // ->where('status', 'Archive')
             // ->with('articles')
             ->whereNull('deleted_at')
             ->orderBy('publish_date', 'DESC')
