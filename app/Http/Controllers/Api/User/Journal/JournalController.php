@@ -262,7 +262,7 @@ class JournalController extends Controller
             foreach ($request->article_files as $index => $fileData) {
                 $path = 'failed';
                 if ($request->hasFile("article_files.$index.file")) {
-                    $path = $request->file("article_files.$index.file")->store('uploads/articles/' . $article->article_for);
+                    $path = $request->file("article_files.$index.file")->storeAs('uploads/articles/' . $article->article_for, $fileData->name);
                 }
 
                 ArticleFile::create([
