@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::middleware(['auth:sanctum', 'check:admin_law,admin_economic,author_law,author_economic'])->group(function () {
+Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy,author_law,author_economy'])->group(function () {
     // dashboard
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

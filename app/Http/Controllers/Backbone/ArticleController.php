@@ -75,7 +75,7 @@ class ArticleController extends Controller
             return redirect()->back()->with('message', 'Edition not found');
         }
 
-        if (Auth::user()->hasRole(['editor_law', 'editor_economic'])) {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
@@ -227,7 +227,7 @@ class ArticleController extends Controller
             return redirect()->back()->with('message', 'Edition not found');
         }
 
-        if (Auth::user()->hasRole(['editor_law', 'editor_economic'])) {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
@@ -377,7 +377,7 @@ class ArticleController extends Controller
             return redirect()->back()->with('message', 'Edition not found');
         }
 
-        if (Auth::user()->hasRole(['editor_law', 'editor_economic'])) {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 

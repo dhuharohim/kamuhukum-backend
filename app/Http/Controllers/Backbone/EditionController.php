@@ -46,7 +46,7 @@ class EditionController extends Controller
      */
     public function store(Request $request)
     {
-        if (Auth::user()->hasRole(['editor_law', 'editor_economic'])) {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
