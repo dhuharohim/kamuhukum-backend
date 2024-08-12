@@ -22,7 +22,7 @@ class AuthBackboneController extends Controller
     public function submitLogin(Request $request)
     {
         $request->validate([
-            'web_type' => 'required|string|in:law,economic',
+            'web_type' => 'required|string|in:law,economy',
             'email' => 'required|email',
             'password' => 'required|'
         ]);

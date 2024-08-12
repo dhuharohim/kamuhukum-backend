@@ -42,10 +42,6 @@
                 <div class="row g-0">
                     <div class="col-xxl-6 col-lg-6 col-12 nftmax-hidden-rp">
                         <div class="nftmax-wc__inner nft-gr-primary">
-                            <!-- Logo -->
-                            {{-- <div class="nftmax-wc__logo">
-									<a href="index.html"><img src="{{asset('assets/img/logo.png')}}" alt="#"></a>
-								</div> --}}
                             <!-- Middle Image -->
                             <div class="nftmax-wc__middle">
                                 <a href="index.html"><img src="{{ asset('assets/img/logo1.png') }}" alt="#"></a>
