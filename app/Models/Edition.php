@@ -31,7 +31,8 @@ class Edition extends Model
     protected $appends = [
         'signed_edition_image',
         'signed_edition_pdf',
-        'publish_date_formatted'
+        'publish_date_formatted',
+        'edition_name_formatted'
     ];
 
 
@@ -55,7 +56,7 @@ class Edition extends Model
         if (empty($this->img_path))
             return;
 
-        return config('app.url') . 'storage/' . $this->img_path;
+        return config('app.url') . 'admin/storage/' . $this->img_path;
     }
 
     public function getSignedEditionPdfAttribute()
@@ -63,7 +64,7 @@ class Edition extends Model
         if (empty($this->img_path))
             return;
 
-        return config('app.url') . 'storage/' . $this->pdf_path;
+        return config('app.url') . 'admin/storage/' . $this->pdf_path;
     }
 
     public function getPublishDateFormattedAttribute()
@@ -72,5 +73,12 @@ class Edition extends Model
             return;
 
         return Carbon::parse($this->publish_date)->format('d-m-Y');
+    }
+
+    public function getEditionNameFormattedAttribute()
+    {
+        if (empty($this->name_edition)) return;
+
+        return 'Vol. ' . $this->volume . ' No.' . $this->issue . ' (' . $this->year . ') ' . $this->name_edition;
     }
 }

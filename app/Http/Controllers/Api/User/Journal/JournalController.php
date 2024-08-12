@@ -30,6 +30,7 @@ class JournalController extends Controller
         $currentEdition = Edition::where('edition_for', $from)
             ->where('status', 'Published')
             ->whereNull('deleted_at')
+            ->orderBy('publish_date', 'DESC')
             ->first();
 
         if (empty($currentEdition)) {
@@ -77,7 +78,7 @@ class JournalController extends Controller
     {
         $archievedEditions = Edition::where('edition_for', $from)
             ->where('slug', $slug)
-            // ->where('status', 'Archive')
+            ->where('status', '!=', 'Draft')
             // ->with('articles')
             ->whereNull('deleted_at')
             ->orderBy('publish_date', 'DESC')

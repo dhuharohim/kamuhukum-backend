@@ -14,7 +14,7 @@ class ArticleKeyword extends Model
 
     protected $fillable = [
         'article_id',
-        'keywords'
+        'keyword'
     ];
 
 

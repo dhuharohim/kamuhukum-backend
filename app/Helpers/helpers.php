@@ -20,7 +20,7 @@ function defaultErrorMessage(): String
  * @param  int $status
  * @return \Illuminate\Http\JsonResponse | JSON
  */
-function successResponse($data = [],$message = '') : JsonResponse
+function successResponse($data = [], $message = ''): JsonResponse
 {
     $response = [
         'error' => false,
@@ -168,3 +168,9 @@ function badRequestResponse($message = null): JsonResponse
     ], 400);
 }
 
+if (!function_exists('cdn')) {
+    function cdn($path)
+    {
+        return env('CDN_URL') . '/' . ltrim($path, '/');
+    }
+}

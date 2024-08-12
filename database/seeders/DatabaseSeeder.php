@@ -21,14 +21,15 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            RoleSeeder::class,
-            AnnouncementsTableSeeder::class,
-            EditionsTableSeeder::class,
-            ArticlesTableSeeder::class,
-            ArticleContributorsTableSeeder::class,
-            ArticleKeywordsTableSeeder::class,
-            ArticleReferencesTableSeeder::class,
-            ArticleFilesTableSeeder::class,
+            // RoleSeeder::class,
+            // AnnouncementsTableSeeder::class,
+            // EditionsTableSeeder::class,
+            // ArticlesTableSeeder::class,
+            // ArticleContributorsTableSeeder::class,
+            // ArticleKeywordsTableSeeder::class,
+            // ArticleReferencesTableSeeder::class,
+            // ArticleFilesTableSeeder::class,
+            BackboneUserSeeder::class
 
             // UserAnnouncementTableSeeder::class,
         ]);

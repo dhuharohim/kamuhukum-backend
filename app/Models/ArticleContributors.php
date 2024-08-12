@@ -31,6 +31,10 @@ class ArticleContributors extends Model
         'in_browse_list'
     ];
 
+    protected $appends = [
+        'name_formatted'
+    ];
+
     /**
      * Activity log options.
      *
@@ -39,5 +43,15 @@ class ArticleContributors extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logAll()->logOnlyDirty();
+    }
+
+    public function getNameFormattedAttribute()
+    {
+        $preferredName = '';
+        if (!empty($this->preferred_name)) {
+            $preferredName = ' (' . $this->preferred_name . ') ';
+        }
+
+        return $this->given_name . ' ' . $this->family_name . $preferredName .  ' - ' . $this->affilation;
     }
 }

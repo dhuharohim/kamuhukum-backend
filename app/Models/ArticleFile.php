@@ -19,6 +19,10 @@ class ArticleFile extends Model
         'type',
     ];
 
+    protected $appends = [
+        'signed_file_path'
+    ];
+
     /**
      * Activity log options.
      *
@@ -32,5 +36,13 @@ class ArticleFile extends Model
     public function article(): BelongsTo
     {
         return $this->belongsTo(Article::class, 'article_id', 'id');
+    }
+
+    public function getSignedFilePathAttribute()
+    {
+        if (empty($this->file_path))
+            return;
+
+        return config('app.url') . 'admin/storage/' . $this->file_path;
     }
 }
