@@ -69,7 +69,7 @@
                                     fill="#374557" fill-opacity="0.6"></path>
                             </svg></span>
                         <input class="nftmax-wc__form-input" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
-                            id="password-field" type="password" name="password" placeholder="" maxlength="8">
+                            id="password-field" type="password" name="password" placeholder="">
                     </div>
                 </div>
                 <div class="form-group">
