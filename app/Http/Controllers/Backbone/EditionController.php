@@ -163,13 +163,14 @@ class EditionController extends Controller
         }
 
         $publishedDate = null;
-        $coverPath = $edition->img_path;
+        $coverPath = $edition->img_path ?? '';
         if ($request->status == 'Published') {
             $publishedDate = date('Y-m-d H:i:s');
             if ($request->hasFile('cover_img')) {
-                if (Storage::exists($edition->img_path ?? '')) {
-                    Storage::delete($edition->img_path);
+                if (Storage::exists($coverPath)) {
+                    Storage::delete($coverPath);
                 }
+
                 $filename = 'sampul-' . $slug . '.' . $request->file('cover_img')->getClientOriginalExtension();
                 $coverPath = $request->file('cover_img')->storeAs('uploads/editions/' . $this->editionFor, $filename);
             }
