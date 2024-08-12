@@ -5,14 +5,39 @@
 @endsection
 
 @section('page_content')
-    <div class="card mg-top-40">
+    <div class="alert alert-warning" role="alert">
+        <span class="nftmax-menu-icon nftmax-svg-icon__v9 me-1">
+            <svg class="nftmax-svg-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd"
+                    d="M18.458 3.11A1 1 0 0 1 19 4v16a1 1 0 0 1-1.581.814L12 16.944V7.056l5.419-3.87a1 1 0 0 1 1.039-.076ZM22 12c0 1.48-.804 2.773-2 3.465v-6.93c1.196.692 2 1.984 2 3.465ZM10 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6V8Zm0 9H5v3a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-3Z"
+                    clip-rule="evenodd" />
+            </svg>
+        </span>
+        <a class="alert-link fw-bold" href="{{ route('announcements.show', $edition->announcement->id) }}">
+            <u>{{ $edition->announcement->title }}</u> </a>
+
+        <span>: Submission deadline on
+            {{ date('d M Y', strtotime($edition->announcement->submission_deadline_date)) }}</span>
+        @if ($edition->announcement->extend_submission_date)
+            <span>, and extended until
+                {{ date('d M Y', strtotime($edition->announcement->extend_submission_date)) }}</span>
+        @endif
+    </div>
+    <div class="welcome-cta mg-top-40 d-block">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('editions.index') }}">Edition List</a></li>
+                <li class="breadcrumb-item" aria-current="page">View {{ $edition->edition_name_formatted }}
+                </li>
+            </ol>
+        </nav>
         <div class="card-body">
-            <h4>Edit {{ $edition->edition_name_formatted }}</h4>
+            <h4>View {{ $edition->edition_name_formatted }}</h4>
             <form class="nftmax-wc__form-main" action="{{ route('editions.update', $edition->id) }}" method="POST"
                 enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-
                 <div class="form-group" id="coverRequired"
                     style="{{ $edition->status == 'Published' ? '' : 'display: none;' }}">
                     <div id="coverImage" class="card"
@@ -27,7 +52,8 @@
                     <select name="status" id="status" required>
                         <option value="Draft" {{ $edition->status == 'Draft' ? 'selected' : '' }}>Draft</option>
                         <option value="Archive" {{ $edition->status == 'Archive' ? 'selected' : '' }}>Archive</option>
-                        <option value="Published" {{ $edition->status == 'Published' ? 'selected' : '' }}>Published</option>
+                        <option value="Published" {{ $edition->status == 'Published' ? 'selected' : '' }}>Published
+                        </option>
                     </select>
                 </div>
 

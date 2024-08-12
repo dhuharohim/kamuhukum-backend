@@ -81,4 +81,9 @@ class Edition extends Model
 
         return 'Vol. ' . $this->volume . ' No.' . $this->issue . ' (' . $this->year . ') ' . $this->name_edition;
     }
+
+    public function announcement()
+    {
+        return $this->hasOne(Announcement::class, 'edition_id', 'id');
+    }
 }

@@ -58,9 +58,9 @@
                                     <td>
                                         <div class="d-flex justify-content-end gap-2">
                                             <a href="{{ route('articles.show', ['editionId' => $edition->id, 'article' => $article->id]) }}"
-                                                class="btn btn-outline-dark">View</a>
+                                                class="btn btn-outline-dark btn-sm">View</a>
                                             <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
-                                                class="btn btn-outline-danger">Delete</a>
+                                                class="btn btn-outline-danger btn-sm">Delete</a>
                                         </div>
                                     </td>
                                 </tr>

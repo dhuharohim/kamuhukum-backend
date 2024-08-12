@@ -42,16 +42,14 @@ Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy,editor_economy
 
     // submissions
     Route::resource('submissions', SubmissionController::class);
+});
 
+Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy'])->group(function () {
     // announcements
-    Route::prefix('announcements')->name('announcements.')->group(function () {
-        Route::resource('/', AnnouncementController::class);
-    });
+    Route::resource('announcements', AnnouncementController::class);
 
     // user access management
-    Route::prefix('users-access')->name('users-access.')->group(function () {
-        Route::resource('/', UserAccessController::class);
-    });
+    Route::resource('users-access', UserAccessController::class);
 });
 
 // Authorization for backend

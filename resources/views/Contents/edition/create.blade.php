@@ -5,7 +5,19 @@
 @endsection
 
 @section('page_content')
-    <div class="card mg-top-40">
+    <style>
+        p {
+            color: black !important;
+        }
+    </style>
+    <div class="nftmax-table welcome-cta d-block mg-top-40">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('editions.index') }}">Edition List</a></li>
+                <li class="breadcrumb-item" aria-current="page">Create
+                </li>
+            </ol>
+        </nav>
         <div class="card-body">
             <h4>Create New Edition</h4>
             <form class="nftmax-wc__form-main" action="{{ route('editions.store') }}" method="POST"

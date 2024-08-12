@@ -110,7 +110,15 @@ class EditionController extends Controller
      */
     public function show(string $id)
     {
-        $edition = Edition::findOrFail($id);
+        $edition = Edition::where('id', $id)
+            ->where('edition_for', $this->editionFor)
+            ->with('announcement')
+            ->first();
+
+        if (empty($edition)) {
+            return redirect()->route('editions.index')->with('message', 'Edition not found');
+        }
+
         return view('Contents.edition.show')->with(['edition' => $edition]);
     }
 

@@ -44,7 +44,8 @@
                         <div class="nftmax-wc__inner nft-gr-primary">
                             <!-- Middle Image -->
                             <div class="nftmax-wc__middle">
-                                <a href="index.html"><img src="{{ asset('assets/img/logo1.png') }}" alt="#"></a>
+                                <a href="index.html"><img src="{{ asset('assets/img/welcome-banner.png') }}"
+                                        alt="#"></a>
                             </div>
                             <!-- Welcome Heading -->
                             <div class="nftmax-wc__heading">
