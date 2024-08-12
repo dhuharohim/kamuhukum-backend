@@ -167,7 +167,7 @@ class EditionController extends Controller
         if ($request->status == 'Published') {
             $publishedDate = date('Y-m-d H:i:s');
             if ($request->hasFile('cover_img')) {
-                if (Storage::exists($edition->img_path)) {
+                if (Storage::exists($edition->img_path ?? '')) {
                     Storage::delete($edition->img_path);
                 }
                 $filename = 'sampul-' . $slug . '.' . $request->file('cover_img')->getClientOriginalExtension();
