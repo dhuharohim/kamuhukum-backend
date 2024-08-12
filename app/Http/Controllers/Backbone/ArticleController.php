@@ -389,13 +389,13 @@ class ArticleController extends Controller
         DB::beginTransaction();
         try {
             // article keywords
-            ArticleKeyword::where('article_id', $article->id)->delete();
+            ArticleKeyword::where('article_id', $article->id)->forceDelete();
 
             // article references
-            ArticleReference::where('article_id', $article->id)->delete();
+            ArticleReference::where('article_id', $article->id)->forceDelete();
 
             // article contributors
-            ArticleContributors::where('article_id', $article->id)->delete();
+            ArticleContributors::where('article_id', $article->id)->forceDelete();
 
             // article files
             $articleFiles = ArticleFile::where('article_id', $article->id)->get();
@@ -405,12 +405,12 @@ class ArticleController extends Controller
                         Storage::delete($file->file_path);
                     }
 
-                    $file->delete();
+                    $file->forceDelete();
                 }
             }
 
             // article
-            $article->delete();
+            $article->forceDelete();
 
             DB::commit();
         } catch (Exception $e) {
