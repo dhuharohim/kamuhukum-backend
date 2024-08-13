@@ -172,7 +172,7 @@
                                             <select name="file_type[]" id="fileType" class="fileType">
                                                 @foreach ($typeFiles as $type)
                                                     <option value="{{ $type }}"
-                                                        {{ old(`article_files[$indexFile][type]`, $file->type) == $type ? 'selected' : '' }}>
+                                                        {{ $file->type == $type ? 'selected' : '' }}>
                                                         {{ $type }}</option>
                                                 @endforeach
                                             </select>
