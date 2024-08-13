@@ -17,6 +17,12 @@
             display: flex;
             padding: 1rem !important;
         }
+
+        @media(max-width:768px) {
+            .offcanvas-end {
+                width: 100% !important;
+            }
+        }
     </style>
     <div class="nftmax-table welcome-cta mg-top-40 d-block">
         @if (in_array($article->status, ['submission', 'incomplete']))
@@ -156,8 +162,8 @@
                                         'Other',
                                     ];
                                 @endphp
-                                @foreach ($article->files as $file)
-                                    <tr>
+                                @foreach ($article->files as $indexFile => $file)
+                                    <tr data-index="{{ $indexFile }}">
                                         <td width="60%">
                                             <a href="{{ $file->signed_file_path }}"
                                                 target="_blank">{{ $file->file_name }}</a>
@@ -166,7 +172,7 @@
                                             <select name="file_type[]" id="fileType" class="fileType">
                                                 @foreach ($typeFiles as $type)
                                                     <option value="{{ $type }}"
-                                                        {{ old('file_type[]', $file->type) == $type ? 'selected' : '' }}>
+                                                        {{ old(`article_files[$indexFile][type]`, $file->type) == $type ? 'selected' : '' }}>
                                                         {{ $type }}</option>
                                                 @endforeach
                                             </select>
@@ -204,7 +210,7 @@
                                 </tr>
                             </thead>
                             <tbody style="font-size: 14px;">
-                                @foreach ($article->authors as $c)
+                                @foreach ($article->authors as $index => $c)
                                     <tr>
                                         <td>{{ $c->name_formatted }}</td>
                                         <td>{{ $c->contact }}</td>
@@ -218,21 +224,31 @@
                                                     type="button">Delete</button>
                                             </div>
                                         </td>
-                                        <input type="hidden" name="given_name[]" value="{{ $c->given_name }}" />
-                                        <input type="hidden" name="family_name[]" value="{{ $c->family_name }}" />
-                                        <input type="hidden" name="preferred_name[]"
-                                            value="{{ $c->preferred_name }}" />
-                                        <input type="hidden" name="contact[]" value="{{ $c->contact }}" />
-                                        <input type="hidden" name="affilation[]" value="{{ $c->affilation }}" />
-                                        <input type="hidden" name="country[]" value="{{ $c->country }}" />
-                                        <input type="hidden" name="homepage_url[]" value="{{ $c->homepage_url }}" />
-                                        <input type="hidden" name="orcid_id[]" value="{{ $c->orcid_id }}" />
-                                        <input type="hidden" name="bio_statement[]" value="{{ $c->bio_statement }}" />
-                                        <input type="hidden" name="role[]" value="{{ $c->contributor_role }}" />
-                                        <input type="hidden" name="principal_contact[]"
-                                            value="{{ $c->principal_contact == '1' ? 'on' : 'off' }}" />
-                                        <input type="hidden" name="in_browse_list[]"
-                                            value="{{ $c->in_browse_list == '1' ? 'on' : 'off' }}" />
+                                        <input type="hidden" data-index="{{ $index }}"
+                                            name="contributors[{{ $index }}][given_name]"
+                                            value="{{ $c['given_name'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][family_name]"
+                                            value="{{ $c['family_name'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][preferred_name]"
+                                            value="{{ $c['preferred_name'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][contact]"
+                                            value="{{ $c['contact'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][affilation]"
+                                            value="{{ $c['affilation'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][country]"
+                                            value="{{ $c['country'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][homepage_url]"
+                                            value="{{ $c['homepage_url'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][orcid_id]"
+                                            value="{{ $c['orcid_id'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][bio_statement]"
+                                            value="{{ $c['bio_statement'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][role]"
+                                            value="{{ $c['contributor_role'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][principal_contact]"
+                                            value="{{ $c['principal_contact'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][in_browse_list]"
+                                            value="{{ $c['in_browse_list'] }}" />
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -276,15 +292,15 @@
     </div>
 
     {{-- Contributor canvas --}}
-    <div class="offcanvas offcanvas-end w-50" style="z-index: 5000" tabindex="-1" id="offCanvasContributor"
+    <div class="offcanvas offcanvas-end" style="z-index: 9999; width:50%;" tabindex="-1" id="offCanvasContributor"
         aria-labelledby="offCanvasContributorLabel">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title" id="offCanvasContributorLabel">Add Contributor</h5>
             <button type="button" class="btn-close text-reset" id="closeCanvas" data-bs-dismiss="offcanvas"
                 aria-label="Close"></button>
         </div>
-        <form id="contributorForm" action="#">
-            <div class="offcanvas-body overflow-scroll" style="height: 40rem;">
+        <div class="offcanvas-body">
+            <form id="contributorForm" action="#">
                 <div class="container nftmax-wc__form-main">
                     <div class="row">
                         <div class="col-md-6">
@@ -359,7 +375,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="row container mt-4">
                     <div class="col-md-6">
                         <div class="form-check form-switch">
@@ -376,13 +391,13 @@
                         </div>
                     </div>
                 </div>
+        </div>
+        <div class="offcanvas-footer mb-2">
+            <div class="row container">
+                <button class="btn btn-primary" type="submit" id="submitContributor">Submit</button>
             </div>
-            <div class="offcanvas-footer mb-2">
-                <div class="row container">
-                    <button class="btn btn-outline-primary" type="submit" id="submitContributor">Submit</button>
-                </div>
-            </div>
-            <input type="hidden" id="editIndex" name="editIndex" value="">
+        </div>
+        <input type="hidden" id="editIndex" name="editIndex" value="">
         </form>
     </div>
 @endsection
@@ -445,11 +460,19 @@
                 }
 
                 $('#formFile tbody').find('.text-muted').closest('tr').remove();
+                var row = $('#formFile tbody tr:last');
+                let fileIndex = 0;
+                if (row.length == 0) {
+                    fileIndex = 0;
+                } else {
+                    fileIndex = parseInt(row.attr('data-index')) + 1;
+                }
+
                 var newRowFile = `
-                <tr>
+                <tr data-index="${fileIndex}">
                     <td width="60%">${file.name}</td>
                     <td>
-                        <select name="file_type[]" id="fileType" class="fileType">
+                        <select name="article_files[${fileIndex}][type]" id="fileType" class="fileType">
                             <option value="Article Text">Article Text</option>
                             <option value="Plagiarism Report">Plagiarism Report</option>
                             <option value="Research Instrument">Research Instrument</option>
@@ -466,10 +489,10 @@
                         <button type="button" class="btn btn-danger deleteFile">Delete</button>
                     </td>
                     <td style="display:none">
-                        <input type="file" name="files[]" style="display:none;" data-filename="${file.name}" />
+                        <input type="file" name="article_files[${fileIndex}][file]" style="display:none;" data-filename="${file.name}" />
                     </td>
                 </tr>
-            `
+                `
                 $('#formFile tbody').append(newRowFile);
                 setTimeout(() => {
                     const hiddenFileInput = $('#formFile tbody tr:last-child input[type="file"]');
@@ -531,47 +554,65 @@
                     row.find('td').eq(2).text(role);
                     row.find('td').eq(3).text(principalContact);
                     row.find('td').eq(4).text(inBrowseList);
+
+                    let contributorIndex = row.find('input:first').data('index');
                     // replace data input
-                    row.find('input[name="given_name[]"]').val(firstName);
-                    row.find('input[name="family_name[]"]').val(lastName);
-                    row.find('input[name="preferred_name[]"]').val(alias);
-                    row.find('input[name="affilation[]"]').val(affilation);
-                    row.find('input[name="contact[]"]').val(contact);
-                    row.find('input[name="country[]"]').val(country);
-                    row.find('input[name="homepage_url[]"]').val(homepageUrl);
-                    row.find('input[name="role[]"]').val(role);
-                    row.find('input[name="bio_statement[]"]').val(bioStatement);
-                    row.find('input[name="principal_contact[]"]').val(principalContact);
-                    row.find('input[name="in_browse_list[]"]').val(inBrowseList);
+                    row.find('input[name="contributors[' + contributorIndex + '][given_name]"]').val(
+                        firstName);
+                    row.find('input[name="contributors[' + contributorIndex + '][family_name]"]').val(
+                        lastName);
+                    row.find('input[name="contributors[' + contributorIndex + '][preferred_name]"]').val(
+                        alias);
+                    row.find('input[name="contributors[' + contributorIndex + '][affilation]"]').val(
+                        affilation);
+                    row.find('input[name="contributors[' + contributorIndex + '][contact]"]').val(contact);
+                    row.find('input[name="contributors[' + contributorIndex + '][country]"]').val(country);
+                    row.find('input[name="contributors[' + contributorIndex + '][homepage_url]"]').val(
+                        homepageUrl);
+                    row.find('input[name="contributors[' + contributorIndex + '][role]"]').val(role);
+                    row.find('input[name="contributors[' + contributorIndex + '][bio_statement]"]').val(
+                        bioStatement);
+                    row.find('input[name="contributors[' + contributorIndex + '][principal_contact]"]').val(
+                        principalContact);
+                    row.find('input[name="contributors[' + contributorIndex + '][in_browse_list]"]').val(
+                        inBrowseList);
                 } else {
+                    var row = $('#contributorList tbody tr:last');
+                    let contributorIndex = 0;
+                    if (row.length == 0) {
+                        contributorIndex = 0;
+                    } else if (row.find('.text-muted').length == 0) {
+                        contributorIndex = parseInt(row.find('input:first').data('index')) + 1;
+                    }
+
                     var newRow = `
-                <tr>
-                    <td>${name}</td>
-                    <td>${contact}</td>
-                    <td>${role}</td>
-                    <td>${principalContact}</td>
-                    <td>${inBrowseList}</td>
-                    <td>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-info btn-sm editRow" type="button">Edit</button>
-                            <button class="btn btn-danger btn-sm deleteRow" type="button">Delete</button>
-                        </div>
-                    </td>
-                    // Form Data
-                    <input type="hidden" name="given_name[]" value="${firstName}" />
-                    <input type="hidden" name="family_name[]" value="${lastName}" />
-                    <input type="hidden" name="preferred_name[]" value="${alias}" />
-                    <input type="hidden" name="contact[]" value="${contact}"/>
-                    <input type="hidden" name="affilation[]" value="${affilation}"/>
-                    <input type="hidden" name="country[]" value="${country}"/>
-                    <input type="hidden" name="homepage_url[]" value="${homepageUrl}"/>
-                    <input type="hidden" name="orcid_id[]" value="${orcidId}"/>
-                    <input type="hidden" name="bio_statement[]" value="${bioStatement}"/>
-                    <input type="hidden" name="role[]" value="${role}"/>
-                    <input type="hidden" name="principal_contact[]" value="${principalContact}"/>
-                    <input type="hidden" name="in_browse_list[]" value="${inBrowseList}"/>
-                </tr>
-                `
+                    <tr>
+                        <td>${name}</td>
+                        <td>${contact}</td>
+                        <td>${role}</td>
+                        <td>${principalContact}</td>
+                        <td>${inBrowseList}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-info btn-sm editRow" type="button">Edit</button>
+                                <button class="btn btn-danger btn-sm deleteRow" type="button">Delete</button>
+                            </div>
+                        </td>
+                        // Form Data
+                        <input type="hidden" data-index="${contributorIndex}" name="contributors[${contributorIndex}][given_name]" value="${firstName}" />
+                        <input type="hidden" name="contributors[${contributorIndex}][family_name]" value="${lastName}" />
+                        <input type="hidden" name="contributors[${contributorIndex}][preferred_name]" value="${alias}" />
+                        <input type="hidden" name="contributors[${contributorIndex}][contact]" value="${contact}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][affilation]" value="${affilation}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][country]" value="${country}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][homepage_url]" value="${homepageUrl}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][orcid_id]" value="${orcidId}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][bio_statement]" value="${bioStatement}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][role]" value="${role}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][principal_contact]" value="${principalContact}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][in_browse_list]" value="${inBrowseList}"/>
+                    </tr>
+                    `
 
                     // Append the new row to the table body
                     $('#contributorList tbody').append(newRow);
@@ -588,23 +629,48 @@
             $('#contributorList').on('click', '.editRow', function() {
                 var row = $(this).closest('tr');
                 var rowIndex = row.index();
+                var contributorIndex = row.find('input:first').data('index');
 
                 // Populate the form fields with the row's data
-                $('#given_name').val(row.find('input[name="given_name[]"]').val());
-                $('#family_name').val(row.find('input[name="family_name[]"]').val());
-                $('#preferred_name').val(row.find('input[name="preferred_name[]"]').val());
-                $('#affilation').val(row.find('input[name="affilation[]"]').val());
-                $('#contact').val(row.find('input[name="contact[]"]').val());
-                $('#country').val(row.find('input[name="country[]"]').val());
-                $('#homepage_url').val(row.find('input[name="homepage_url[]"]').val());
-                $('#bio_statement').val(row.find('input[name="bio_statement[]"]').val());
-                $('#role').val(row.find('input[name="role[]"]').val());
-                $('#orcid_id').val(row.find('input[name="orcid_id[]"]').val());
-                if (row.find('input[name="principal_contact[]').val() == 'on') {
+                $('#given_name').val(row.find('input[name="contributors[' + contributorIndex +
+                        '][given_name]"]')
+                    .val());
+                $('#family_name').val(row.find('input[name="contributors[' + contributorIndex +
+                        '][family_name]"]')
+                    .val());
+                $('#preferred_name').val(row.find('input[name="contributors[' + contributorIndex +
+                    '][preferred_name]"]').val());
+                $('#affilation').val(row.find('input[name="contributors[' + contributorIndex +
+                        '][affilation]"]')
+                    .val());
+                $('#contact').val(row.find('input[name="contributors[' + contributorIndex + '][contact]"]')
+                    .val());
+                $('#country').val(row.find('input[name="contributors[' + contributorIndex + '][country]"]')
+                    .val());
+                $('#homepage_url').val(row.find('input[name="contributors[' + contributorIndex +
+                        '][homepage_url]"]')
+                    .val());
+                $('#bio_statement').val(row.find('input[name="contributors[' + contributorIndex +
+                        '][bio_statement]"]')
+                    .val());
+
+                $('#role').val(row.find('input[name="contributors[' + contributorIndex + '][role]"]')
+                    .val());
+
+                $('#orcid_id').val(row.find('input[name="contributors[' + contributorIndex +
+                    '][orcid_id]"]').val());
+
+                if (row.find('input[name="contributors[' + contributorIndex + '][principal_contact]"')
+                    .val() == 'on' || row.find('input[name="contributors[' + contributorIndex +
+                        '][principal_contact]"')
+                    .val() == '1') {
                     $('#principal_contact').attr('checked', true);
                 }
 
-                if (row.find('input[name="in_browse_list[]').val() == 'on') {
+                if (row.find('input[name="contributors[' + contributorIndex + '][in_browse_list]').val() ==
+                    'on' || row.find('input[name="contributors[' + contributorIndex + '][in_browse_list]')
+                    .val() ==
+                    '1') {
                     $('#in_browse_list').attr('checked', true);
                 }
 
@@ -623,7 +689,6 @@
             });
 
             $('#addContributor').click(function() {
-                console.log('click')
                 $('#contributorForm').trigger('reset');
                 $('#editIndex').val('');
             })

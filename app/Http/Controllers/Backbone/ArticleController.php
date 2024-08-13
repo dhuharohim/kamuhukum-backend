@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Backbone;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ArticleBackboneRequest;
 use App\Models\Article;
 use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
@@ -68,7 +69,7 @@ class ArticleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store($editionId, Request $request)
+    public function store($editionId, ArticleBackboneRequest $request)
     {
         $edition = self::checkEdition($editionId);
         if (!$edition) {
@@ -88,8 +89,6 @@ class ArticleController extends Controller
         if ($request->status == 'production') {
             $publishedDate = date('Y-m-d');
         }
-
-        // dd($request->files);
 
         DB::beginTransaction();
         try {
@@ -125,7 +124,7 @@ class ArticleController extends Controller
             }
 
             // article references
-            if (count($request->references) > 0) {
+            if (isset($request->references) && count($request->references) > 0) {
                 foreach ($request->references as $reference) {
                     ArticleReference::create([
                         'article_id' => $article->id,
@@ -135,44 +134,46 @@ class ArticleController extends Controller
             }
 
             // article contributors
-            if (count($request->given_name) > 0) {
-                foreach ($request->given_name as $key => $given_name) {
+            if (count($request->contributors) > 0) {
+                foreach ($request->contributors as $contributor) {
                     ArticleContributors::create([
                         'article_id' => $article->id,
-                        'contributor_role' => $request->role[$key],
-                        'given_name' => $given_name,
-                        'family_name' => $request->family_name[$key],
-                        'contact' => $request->contact[$key],
-                        'preferred_name' => $request->preferred_name[$key],
-                        'affilation' => $request->affilation[$key],
-                        'country' => $request->country[$key],
+                        'contributor_role' => $contributor['role'],
+                        'given_name' => $contributor['given_name'],
+                        'family_name' => $contributor['family_name'],
+                        'contact' => $contributor['contact'],
+                        'preferred_name' => $contributor['preferred_name'],
+                        'affilation' => $contributor['affilation'],
+                        'country' => $contributor['country'],
                         // 'img_url',
-                        'homepage_url' => $request->homepage_url[$key],
-                        'orcid_id' => $request->orcid_id[$key],
-                        // 'mailing_address' => $request->,
-                        'bio_statement' => $request->bio_statement[$key],
+                        'homepage_url' => $contributor['homepage_url'],
+                        'orcid_id' => $contributor['orcid_id'],
+                        // 'mailing_address' => $contributor->,
+                        'bio_statement' => $contributor['bio_statement'],
                         // 'reviewing_interest',
-                        'principal_contact' => $request->principal_contact[$key] == 'on' ? '1' : '0',
-                        'in_browse_list' => $request->in_browse_list[$key] == 'on' ? '1' : '0'
+                        'principal_contact' => $contributor['principal_contact'] == 'on' ? '1' : '0',
+                        'in_browse_list' => $contributor['in_browse_list'] == 'on' ? '1' : '0'
                     ]);
                 }
             }
 
             // article files
-            if ($request->hasFile('files')) {
-                $files = $request->file('files'); // Get the array of files
-                $fileTypes = $request->input('file_type', []); // Get the array of file types
+            foreach ($request->article_files as $key => $file) {
+                if ($file['file'] instanceof \Illuminate\Http\UploadedFile) {
+                    $uploadedFile = $file['file'];
 
-                foreach ($files as $index => $file) {
-                    $filename = 'file-' . $slug . '.' . $file->getClientOriginalExtension();
-                    $path = $file->storeAs('uploads/articles/' . $this->articleFor, $filename, 'public');
+                    // Generate the filename
+                    $filename = 'file-' . $slug . '.' . $uploadedFile->getClientOriginalExtension();
+
+                    // Store the file and get the storage path
+                    $uploadedFile->storeAs('uploads/articles/' . $this->articleFor, $filename, 'public');
 
                     // Save file info in the database
                     ArticleFile::create([
                         'article_id' => $article->id, // Replace with actual article ID
                         'file_name' => $filename,
-                        'file_path' => $path,
-                        'type' => $request->file_type[$index]
+                        'file_path' => 'uploads/articles/' . $this->articleFor . '/' . $filename,
+                        'type' => $file['type']
                     ]);
                 }
             }
@@ -180,7 +181,7 @@ class ArticleController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('message', 'Error saving article: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Error saving article: ' . $e->getMessage())->withInput();
         }
 
         return redirect()->route('articles.index', $edition->id)->with('message', 'Article created successfully');
@@ -222,6 +223,7 @@ class ArticleController extends Controller
      */
     public function update($editionId, Request $request, string $id)
     {
+        // dd($request->all());
         $edition = self::checkEdition($editionId);
         if (empty($edition)) {
             return redirect()->back()->with('message', 'Edition not found');
@@ -290,25 +292,25 @@ class ArticleController extends Controller
 
             // article contributors
             ArticleContributors::where('article_id', $article->id)->forceDelete();
-            if (is_array($request->given_name) && count($request->given_name) > 0) {
-                foreach ($request->given_name as $key => $given_name) {
+            if (count($request->contributors) > 0) {
+                foreach ($request->contributors as $contributor) {
                     ArticleContributors::create([
                         'article_id' => $article->id,
-                        'contributor_role' => $request->role[$key],
-                        'given_name' => $given_name,
-                        'family_name' => $request->family_name[$key],
-                        'contact' => $request->contact[$key],
-                        'preferred_name' => $request->preferred_name[$key],
-                        'affilation' => $request->affilation[$key],
-                        'country' => $request->country[$key],
+                        'contributor_role' => $contributor['role'],
+                        'given_name' => $contributor['given_name'],
+                        'family_name' => $contributor['family_name'],
+                        'contact' => $contributor['contact'],
+                        'preferred_name' => $contributor['preferred_name'],
+                        'affilation' => $contributor['affilation'],
+                        'country' => $contributor['country'],
                         // 'img_url',
-                        'homepage_url' => $request->homepage_url[$key],
-                        'orcid_id' => $request->orcid_id[$key],
-                        // 'mailing_address' => $request->,
-                        'bio_statement' => $request->bio_statement[$key],
+                        'homepage_url' => $contributor['homepage_url'],
+                        'orcid_id' => $contributor['orcid_id'],
+                        // 'mailing_address' => $contributor->,
+                        'bio_statement' => $contributor['bio_statement'],
                         // 'reviewing_interest',
-                        'principal_contact' => $request->principal_contact[$key] == 'on' ? '1' : '0',
-                        'in_browse_list' => $request->in_browse_list[$key] == 'on' ? '1' : '0'
+                        'principal_contact' => $contributor['principal_contact'] == 'on' ? '1' : '0',
+                        'in_browse_list' => $contributor['in_browse_list'] == 'on' ? '1' : '0'
                     ]);
                 }
             }
@@ -341,21 +343,25 @@ class ArticleController extends Controller
                     ->forceDelete();
             }
 
-            if ($request->hasFile('files')) {
-                $files = $request->file('files'); // Get the array of files
-                $fileTypes = $request->input('file_type', []); // Get the array of file types
+            if (is_array($request->article_files)) {
+                foreach ($request->article_files as $key => $file) {
+                    if ($file['file'] instanceof \Illuminate\Http\UploadedFile) {
+                        $uploadedFile = $file['file'];
 
-                foreach ($files as $index => $file) {
-                    $filename = 'file-' . $slug . '.' . $file->getClientOriginalExtension();
-                    $path = $file->storeAs('uploads/articles/' . $this->articleFor, $filename, 'public');
+                        // Generate the filename
+                        $filename = 'file-' . $slug . '.' . $uploadedFile->getClientOriginalExtension();
 
-                    // Save file info in the database
-                    ArticleFile::create([
-                        'article_id' => $article->id, // Replace with actual article ID
-                        'file_name' => $filename,
-                        'file_path' => $path,
-                        'type' => $request->file_type[$index]
-                    ]);
+                        // Store the file and get the storage path
+                        $uploadedFile->storeAs('uploads/articles/' . $this->articleFor, $filename, 'public');
+
+                        // Save file info in the database
+                        ArticleFile::create([
+                            'article_id' => $article->id, // Replace with actual article ID
+                            'file_name' => $filename,
+                            'file_path' => 'uploads/articles/' . $this->articleFor . '/' . $filename,
+                            'type' => $file['type']
+                        ]);
+                    }
                 }
             }
 
