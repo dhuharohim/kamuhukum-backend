@@ -272,9 +272,9 @@ class ArticleController extends Controller
             ]);
 
             // article keywords
-            ArticleKeyword::where('article_id', $article->id)->forceDelete();
             $keywordsArray = explode(',', $request->keywords);
             if (is_array($keywordsArray) && count($keywordsArray) > 0) {
+                ArticleKeyword::where('article_id', $article->id)->forceDelete();
                 foreach ($keywordsArray as $keyword) {
                     ArticleKeyword::create([
                         'article_id' => $article->id,
@@ -284,8 +284,8 @@ class ArticleController extends Controller
             }
 
             // article references
-            ArticleReference::where('article_id', $article->id)->forceDelete();
             if (is_array($request->references) && count($request->references) > 0) {
+                ArticleReference::where('article_id', $article->id)->forceDelete();
                 foreach ($request->references as $reference) {
                     ArticleReference::create([
                         'article_id' => $article->id,

@@ -271,8 +271,10 @@
                                     @foreach ($article->references as $idx => $r)
                                         <tr>
                                             <td>
-                                                <div id="editorRef-{{ $idx }}">{{ strip_tags($r->reference) }}
+                                                <div id="editorRef-{{ $idx }}">{!! $r->reference !!}
                                                 </div>
+                                                <input type="hidden" id="reference-{{ $idx }}"
+                                                    name="references[]" value="{{ $r->reference }}">
                                             </td>
                                             <td>
                                                 <button type="button" class="deleteRef btn btn-danger">Delete</button>
@@ -723,6 +725,17 @@
                 quillAddRefInit(refCount);
                 quillRef.setContents('');
                 refCount++;
+            });
+
+            $('#formRef').on('click', '.deleteRef', function() {
+                $(this).closest('tr').remove();
+                if ($('#formRef tbody').find('tr').length == 0) {
+                    $('#formRef tbody').append(`
+                    <tr>
+                        <td colspan="2" align="center" class="text-muted"><em>No reference</em></td>
+                    </tr>
+                `)
+                }
             });
         });
 
