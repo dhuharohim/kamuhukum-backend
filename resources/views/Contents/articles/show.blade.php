@@ -268,7 +268,7 @@
                                     </tr>
                                 </thead>
                                 <tbody style="font-size: 14px;">
-                                    @foreach ($article->references as $idx => $r)
+                                    @forelse ($article->references as $idx => $r)
                                         <tr>
                                             <td>
                                                 <div id="editorRef-{{ $idx }}">{!! $r->reference !!}
@@ -280,7 +280,12 @@
                                                 <button type="button" class="deleteRef btn btn-danger">Delete</button>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="2" align="center" class="text-muted"><em>No reference</em>
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
