@@ -415,7 +415,7 @@
                 <tr>
                     <td width="90%">
                         <div id="editorRef-${refCount}">${refSanitize}</div>
-                        <input type="hidden" id="reference-${refCount}" name="references[]" value="${refSanitize}">
+                        <input type="hidden" id="reference-${refCount}" name="references[]" />
                     </td>
                     <td>
                         <button type="button" class="deleteRef btn btn-danger">Delete</button>
@@ -435,6 +435,7 @@
                 theme: 'snow'
             });
 
+            $(`#reference-${refCount}`).val(quillInstances[`editorRef-${refCount}`].root.innerHTML);
             quillInstances[`editorRef-${refCount}`].on('text-change', function() {
                 $(`#reference-${refCount}`).val(quillInstances[`editorRef-${refCount}`].root.innerHTML);
             });
