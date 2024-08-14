@@ -14,14 +14,16 @@
                     clip-rule="evenodd" />
             </svg>
         </span>
-        <a class="alert-link fw-bold" href="{{ route('announcements.show', $edition->announcement->id) }}">
-            <u>{{ $edition->announcement->title }}</u> </a>
+        @if ($edition->announcement)
+            <a class="alert-link fw-bold" href="{{ route('announcements.show', $edition->announcement->id) }}">
+                <u>{{ $edition->announcement->title }}</u> </a>
 
-        <span>: Submission deadline on
-            {{ date('d M Y', strtotime($edition->announcement->submission_deadline_date)) }}</span>
-        @if ($edition->announcement->extend_submission_date)
-            <span>, and extended until
-                {{ date('d M Y', strtotime($edition->announcement->extend_submission_date)) }}</span>
+            <span>: Submission deadline on
+                {{ date('d M Y', strtotime($edition->announcement->submission_deadline_date)) }}</span>
+            @if ($edition->announcement->extend_submission_date)
+                <span>, and extended until
+                    {{ date('d M Y', strtotime($edition->announcement->extend_submission_date)) }}</span>
+            @endif
         @endif
     </div>
     <div class="welcome-cta mg-top-40 d-block">
