@@ -100,44 +100,49 @@
                                         <span class="menu-bar__name">Submissions</span></span>
                                 </a>
                             </li>
-                            <li class="{{ request()->routeIs(['announcements.*']) ? 'active' : '' }}">
-                                <a href="{{ route('announcements.index') }}"><span class="menu-bar__text">
-                                        <span class="nftmax-menu-icon nftmax-svg-icon__v9">
-                                            <svg class="nftmax-svg-icon" aria-hidden="true"
-                                                xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                fill="currentColor" viewBox="0 0 24 24">
-                                                <path fill-rule="evenodd"
-                                                    d="M18.458 3.11A1 1 0 0 1 19 4v16a1 1 0 0 1-1.581.814L12 16.944V7.056l5.419-3.87a1 1 0 0 1 1.039-.076ZM22 12c0 1.48-.804 2.773-2 3.465v-6.93c1.196.692 2 1.984 2 3.465ZM10 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6V8Zm0 9H5v3a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-3Z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
-                                        <span class="menu-bar__name">Announcements</span></span>
-                                </a>
-                            </li>
+                            @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                                <li class="{{ request()->routeIs(['announcements.*']) ? 'active' : '' }}">
+                                    <a href="{{ route('announcements.index') }}"><span class="menu-bar__text">
+                                            <span class="nftmax-menu-icon nftmax-svg-icon__v9">
+                                                <svg class="nftmax-svg-icon" aria-hidden="true"
+                                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                    fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd"
+                                                        d="M18.458 3.11A1 1 0 0 1 19 4v16a1 1 0 0 1-1.581.814L12 16.944V7.056l5.419-3.87a1 1 0 0 1 1.039-.076ZM22 12c0 1.48-.804 2.773-2 3.465v-6.93c1.196.692 2 1.984 2 3.465ZM10 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6V8Zm0 9H5v3a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-3Z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                            <span class="menu-bar__name">Announcements</span></span>
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </div>
                     <!-- End Nav Menu -->
                 </div>
-                <div class="admin-menu__two mg-top-50">
-                    <h4 class="admin-menu__title nftmax-scolor">Settings</h4>
-                    <!-- Nav Menu -->
-                    <div class="menu-bar">
-                        <ul class="menu-bar__one">
-                            <li class="{{ request()->routeIs(['users-access.*']) ? 'active' : '' }}"><a
-                                    href="{{ route('users-access.index') }}"><span class="menu-bar__text"><span
-                                            class="nftmax-menu-icon nftmax-svg-icon__v10"><svg class="nftmax-svg-icon"
-                                                viewBox="0 0 15 20" xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M10.8692 11.6667H4.13085C3.03569 11.668 1.98576 12.1036 1.21136 12.878C0.436961 13.6524 0.00132319 14.7023 0 15.7975V20H15.0001V15.7975C14.9987 14.7023 14.5631 13.6524 13.7887 12.878C13.0143 12.1036 11.9644 11.668 10.8692 11.6667Z">
-                                                </path>
-                                                <path
-                                                    d="M7.49953 10C10.261 10 12.4995 7.76145 12.4995 5.00002C12.4995 2.23858 10.261 0 7.49953 0C4.7381 0 2.49951 2.23858 2.49951 5.00002C2.49951 7.76145 4.7381 10 7.49953 10Z">
-                                                </path>
-                                            </svg></span><span class="menu-bar__name">Users</span> </span></a>
-                            </li>
-                        </ul>
+                @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                    <div class="admin-menu__two mg-top-50">
+                        <h4 class="admin-menu__title nftmax-scolor">Settings</h4>
+                        <!-- Nav Menu -->
+                        <div class="menu-bar">
+                            <ul class="menu-bar__one">
+                                <li class="{{ request()->routeIs(['users-access.*']) ? 'active' : '' }}"><a
+                                        href="{{ route('users-access.index') }}"><span class="menu-bar__text"><span
+                                                class="nftmax-menu-icon nftmax-svg-icon__v10"><svg
+                                                    class="nftmax-svg-icon" viewBox="0 0 15 20"
+                                                    xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M10.8692 11.6667H4.13085C3.03569 11.668 1.98576 12.1036 1.21136 12.878C0.436961 13.6524 0.00132319 14.7023 0 15.7975V20H15.0001V15.7975C14.9987 14.7023 14.5631 13.6524 13.7887 12.878C13.0143 12.1036 11.9644 11.668 10.8692 11.6667Z">
+                                                    </path>
+                                                    <path
+                                                        d="M7.49953 10C10.261 10 12.4995 7.76145 12.4995 5.00002C12.4995 2.23858 10.261 0 7.49953 0C4.7381 0 2.49951 2.23858 2.49951 5.00002C2.49951 7.76145 4.7381 10 7.49953 10Z">
+                                                    </path>
+                                                </svg></span><span class="menu-bar__name">Users</span> </span></a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
+                @endif
 
                 <!-- Logout Button -->
                 <div class="logout-button">

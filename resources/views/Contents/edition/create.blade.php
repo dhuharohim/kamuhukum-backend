@@ -88,9 +88,11 @@
                     <div id="editor"></div>
                     <input type="hidden" name="description" id="description" />
                 </div>
-                <div class="button-submit mt-4">
-                    <button type="submit" class="btn btn-outline-primary w-100">Save</button>
-                </div>
+                @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                    <div class="button-submit mt-4">
+                        <button type="submit" class="btn btn-outline-primary w-100">Save</button>
+                    </div>
+                @endif
             </form>
         </div>
     </div>

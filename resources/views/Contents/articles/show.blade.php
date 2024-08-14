@@ -45,7 +45,6 @@
                 method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-
                 <div class="form-group">
                     <label for="status">Status<sup>*</sup></label>
                     @php
@@ -284,9 +283,10 @@
                             </table>
                         </div>
                     </div>
+                    <div class="row mt-4 mb-4">
+                        <button type="submit" class="btn btn-outline-primary">Save Changes</button>
+                    </div>
                 </div>
-
-                <button type="submit" class="btn btn-primary">Save Changes</button>
             </form>
         </div>
     </div>

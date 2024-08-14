@@ -15,7 +15,9 @@
         </nav>
         <div class="nftmax-table__heading">
             <h3 class="nftmax-table__title mb-0">Article List on {{ $edition->edition_name_formatted }}</h3>
-            <a href="{{ route('articles.create', $edition->id) }}" class="btn btn-primary">Add Article</a>
+            @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                <a href="{{ route('articles.create', $edition->id) }}" class="btn btn-primary">Add Article</a>
+            @endif
         </div>
         <div class="table-responsive">
             <table class="table table-borderless table-striped table-hover" id="articleTable">
@@ -70,8 +72,10 @@
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{{ route('articles.show', ['editionId' => $edition->id, 'article' => $article->id]) }}"
                                         class="btn btn-outline-dark btn-sm">View</a>
-                                    <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
-                                        class="btn btn-outline-danger btn-sm">Delete</a>
+                                    @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                                        <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
+                                            class="btn btn-outline-danger btn-sm">Delete</a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

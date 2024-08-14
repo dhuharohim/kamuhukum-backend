@@ -8,7 +8,9 @@
     <div class="nftmax-table welcome-cta mg-top-40 d-block">
         <div class="nftmax-table__heading">
             <h3 class="nftmax-table__title mb-0">Edition List</h3>
-            <a href="{{ route('editions.create') }}" class="btn btn-primary">Create</a>
+            @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                <a href="{{ route('editions.create') }}" class="btn btn-primary">Create</a>
+            @endif
         </div>
         <div class="table-responsive">
             <table class="table table-borderless table-hover" id="editionTable">
@@ -48,8 +50,10 @@
                                     <a href="{{ route('articles.index', $edition->id) }}"
                                         class="btn btn-sm btn-outline-primary">Article
                                         List</a>
-                                    <a id="deleteEdition" onclick="confirmDelete('{{ $edition->id }}')"
-                                        data-id="{{ $edition->id }}" class="btn btn-outline-danger btn-sm">Delete</a>
+                                    @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                                        <a id="deleteEdition" onclick="confirmDelete('{{ $edition->id }}')"
+                                            data-id="{{ $edition->id }}" class="btn btn-outline-danger btn-sm">Delete</a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

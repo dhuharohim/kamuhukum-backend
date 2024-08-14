@@ -63,6 +63,10 @@ class ArticleController extends Controller
             return redirect()->back()->with('message', 'Edition not found');
         }
 
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+            return redirect()->back()->with('message', 'Unauthorized');
+        }
+
         return view('Contents.articles.create')->with(['edition' => $edition]);
     }
 
@@ -76,9 +80,9 @@ class ArticleController extends Controller
             return redirect()->back()->with('message', 'Edition not found');
         }
 
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
-            return redirect()->back()->with('message', 'Unauthorized');
-        }
+        // if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        //     return redirect()->back()->with('message', 'Unauthorized');
+        // }
 
         $slug = $request->slug;
         if (empty($slug)) {

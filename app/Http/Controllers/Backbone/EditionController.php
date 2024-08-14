@@ -38,6 +38,10 @@ class EditionController extends Controller
      */
     public function create()
     {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+            return redirect()->back()->with('message', 'Unauthorized');
+        }
+
         return view("Contents.edition.create");
     }
 
@@ -135,6 +139,10 @@ class EditionController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+            return redirect()->back()->with('message', 'Unauthorized');
+        }
+
         $edition = Edition::findOrFail($id);
 
         $request->validate([
@@ -214,6 +222,10 @@ class EditionController extends Controller
      */
     public function destroy(string $id)
     {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+            return redirect()->back()->with('message', 'Unauthorized');
+        }
+
         DB::beginTransaction();
         try {
             Edition::where('id', $id)->delete();
