@@ -26,16 +26,22 @@ class AuthController extends Controller
         $credentials = $request->only('username', 'password');
         if (Auth::attempt($credentials)) {
             $user = Auth::user()->load('profile');
-            $token = $user->createToken($request->login_from)->plainTextToken;
+            // validate role credentials
+            if (!$user->hasRole(['author_' . $request->login_from])) {
+                return response()->json([
+                    'message' => 'Akun tidak ditemukan',
+                ]);
+            }
 
+            $token = $user->createToken($request->login_from)->plainTextToken;
             return response()->json([
                 'token' => $token,
-                'message' => 'Successfully logged in',
+                'message' => 'Berhasil login',
             ]);
         }
 
         return response()->json([
-            'message' => 'Unauthorized bro'
+            'message' => 'Akun tidak ditemukan'
         ], 401);
     }
 
