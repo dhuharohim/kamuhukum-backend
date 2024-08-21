@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => [' GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
 
-    'allowed_origins' => ['http://localhost:*', 'https://legalinsightjournal.com'],
+    'allowed_origins' => ['http://localhost:*', 'https://legalinsightjournal.com', 'https://oeajournal.com'],
 
     'allowed_origins_patterns' => [],
 
