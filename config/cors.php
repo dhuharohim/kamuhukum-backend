@@ -19,11 +19,11 @@ return [
 
     'allowed_methods' => [' GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
 
-    'allowed_origins' => ['http://localhost:*', 'https://kamuhukum-admin.vercel.app', 'https://kamuhukum-journal.vercel.app'],
+    'allowed_origins' => ['http://localhost:*', 'https://legalinsightjournal.com'],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['Origins',' authorization',' content-type'],
+    'allowed_headers' => ['Origins', ' authorization', ' content-type'],
 
     'exposed_headers' => [],
 
