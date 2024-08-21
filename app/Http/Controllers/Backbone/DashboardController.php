@@ -14,7 +14,7 @@ class DashboardController extends Controller
         return view('Contents.dashboard')->with([
             'page' => 'dashboard',
             'user' => $user,
-            'journal' => $user->hasRole(['admin_law', 'editor_law']) ? 'kamuhukumjournal.com' : 'oeajournal.com'
+            'journal' => $user->hasRole(['admin_law', 'editor_law']) ? 'legisinsightjournal.com' : 'oeajournal.com'
         ]);
     }
 }

@@ -212,7 +212,7 @@
                             $domain = auth()
                                 ->user()
                                 ->hasRole(['admin_law', 'editor_law'])
-                                ? 'kamuhukumjournal.com'
+                                ? 'legisinsightjournal.com'
                                 : 'oeajournal.com';
                         @endphp
                         <h4 style="text-indent: 1rem;" class="mb-0">{{ $domain }}</h4>

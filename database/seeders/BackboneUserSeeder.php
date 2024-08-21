@@ -17,15 +17,15 @@ class BackboneUserSeeder extends Seeder
     {
         $users = [
             [
-                'username' => 'admin_kamuhukum',
-                'email' => 'admin@kamuhukumjournal.com',
-                'password' => 'KamuhukumAdmin@2024!',
+                'username' => 'admin_legisinsight',
+                'email' => 'admin@legisinsightjournal.com',
+                'password' => 'LegisInsightAdmin@2024!',
                 'role' => 'admin_law',
             ],
             [
-                'username' => 'editor_kamuhukum',
-                'email' => 'editor@kamuhukumjournal.com',
-                'password' => 'KamuhukumEditor@2024!',
+                'username' => 'editor_legisinsight',
+                'email' => 'editor@legisinsightjournal.com',
+                'password' => 'LegisInsightEditor@2024!',
                 'role' => 'editor_law',
             ],
             [

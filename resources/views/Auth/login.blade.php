@@ -33,7 +33,7 @@
                     <label class="nftmax-wc__form-label">Select a Domain</label>
                     <div class="form-group__input">
                         @php
-                            $webTypes = ['law' => 'kamuhukumjournal.com', 'economy' => 'oeajournal.com'];
+                            $webTypes = ['law' => 'legisinsightjournal.com', 'economy' => 'oeajournal.com'];
                         @endphp
                         <select name="web_type" id="web_type">
                             @foreach ($webTypes as $key => $value)
