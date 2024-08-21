@@ -30,7 +30,7 @@ class AuthController extends Controller
             if (!$user->hasRole(['author_' . $request->login_from])) {
                 return response()->json([
                     'message' => 'Akun tidak ditemukan',
-                ]);
+                ], 404);
             }
 
             $token = $user->createToken($request->login_from)->plainTextToken;
