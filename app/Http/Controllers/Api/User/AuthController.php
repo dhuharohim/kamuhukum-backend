@@ -20,7 +20,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'login_from' => 'required|string|in:law,economic'
+            'login_from' => 'required|string|in:law,economy'
         ]);
 
         $credentials = $request->only('username', 'password');
@@ -41,7 +41,7 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $roleName = $request->user_type === 'law' ? 'author_law' : 'author_economic';
+        $roleName = $request->user_type === 'law' ? 'author_law' : 'author_economy';
         $role = Role::where('name', $roleName)->where('guard_name', 'api')->first();
         if ($role) {
         } else {
@@ -114,7 +114,7 @@ class AuthController extends Controller
 
     public function editProfile($from, $type, Request $request)
     {
-        if (!in_array($from, ['law', 'economic'])) {
+        if (!in_array($from, ['law', 'economy'])) {
             return badRequestResponse();
         }
 
