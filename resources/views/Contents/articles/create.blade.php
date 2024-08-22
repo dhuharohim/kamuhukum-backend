@@ -83,7 +83,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="subtitle">Subtitle</label>
-                            <input type="text" name="subtitle" id="subtitle" required value="{{ old('subtitle') }}">
+                            <input type="text" name="subtitle" id="subtitle" value="{{ old('subtitle') }}">
                         </div>
                     </div>
                     <div class="col-md-6">
