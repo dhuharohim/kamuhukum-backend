@@ -255,7 +255,16 @@ class EditionController extends Controller
 
         DB::beginTransaction();
         try {
-            Edition::where('id', $id)->delete();
+            $edition = Edition::findOrFail($id);
+            if (Storage::exists($edition->img_path)) {
+                Storage::delete($edition->img_path);
+            }
+
+            if (Storage::exists($edition->pdf_path)) {
+                Storage::delete($edition->pdf_path);
+            }
+
+            $edition->delete();
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
