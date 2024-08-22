@@ -150,11 +150,12 @@ class EditionController extends Controller
             'volume' => 'required',
             'issue' => [
                 'required',
-                Rule::unique('editions')->where(function ($query) use ($request) {
+                Rule::unique('editions')->where(function ($query) use ($request, $edition) {
                     return $query->where('volume', $request->volume)
                         ->where('year', $request->year)
-                        ->whereNull('deleted_at');
-                })->ignore($edition->id),
+                        ->whereNull('deleted_at')
+                        ->where('id', '!=', $edition->id); // Exclude the current edition explicitly
+                }),
             ],
             'year' => 'required',
             'name_edition' => 'required',
