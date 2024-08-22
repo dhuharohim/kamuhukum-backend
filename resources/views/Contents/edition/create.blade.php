@@ -27,12 +27,23 @@
                     <div id="coverImage" class="card"
                         style="height:245px; width:175px; background-size:cover; background-repeat:no-repeat;">
                     </div>
-                    <label for="cover">Cover<sup>*</sup></label>
-                    <input type="file" name="cover_img" id="cover" class="align-content-center" accept="image/*">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="cover">Cover<sup>*</sup></label>
+                            <input type="file" name="cover_img" id="cover" class="align-content-center"
+                                accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cover">Pdf File</label>
+                            <input type="file" class="align-content-center" name="pdf_file" id="pdf_file"
+                                accept=".pdf">
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="status">Status<sup>*</sup></label>
                     <select name="status" id="status" required>
+                        <option value="">Select status</option>
                         <option value="Draft">Draft</option>
                         <option value="Archive">Archive</option>
                         <option value="Published">Published</option>
@@ -109,7 +120,7 @@
         })
 
         $('#status').change(function() {
-            if ($(this).val() == 'Published') {
+            if ($(this).val() !== 'Draft') {
                 $('#coverRequired').slideDown();
                 $('#cover').attr('required', true);
             } else {

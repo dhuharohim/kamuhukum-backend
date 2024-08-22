@@ -69,7 +69,15 @@ class EditionController extends Controller
             'name_edition' => 'required',
             'slug' => 'nullable',
             'description' => 'nullable',
-            'cover_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240|required_if:status,Published',
+            'cover_img' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:10240',
+                Rule::requiredIf(function () use ($request) {
+                    return $request->status !== 'Draft';
+                }),
+            ]
         ]);
 
         $slug = $request->slug;
@@ -79,10 +87,16 @@ class EditionController extends Controller
 
         $publishedDate = null;
         $coverPath = null;
-        if ($request->status == 'Published') {
+        $pdfPath = null;
+        if ($request->status !== 'Draft') {
             $publishedDate = date('Y-m-d H:i:s');
             $filename = 'sampul-' . $slug . '.' . $request->file('cover_img')->getClientOriginalExtension();
             $coverPath = $request->file('cover_img')->storeAs('uploads/editions/' . $this->editionFor, $filename);
+
+            if ($request->hasFile('pdf_file')) {
+                $filePdfName = 'file-' . $slug . '.' . $request->file('pdf_file')->getClientOriginalExtension();
+                $pdfPath = $request->file('pdf_file')->storeAs('uploads/editions/' . $this->editionFor, $filePdfName);
+            }
         }
 
         DB::beginTransaction();
@@ -97,7 +111,8 @@ class EditionController extends Controller
                 'publish_date' => $publishedDate,
                 'edition_for' => $this->editionFor,
                 'status' => $request->status,
-                'img_path' => $coverPath
+                'img_path' => $coverPath,
+                'pdf_path' => $pdfPath
             ]);
 
             DB::commit();
@@ -168,11 +183,9 @@ class EditionController extends Controller
                 'image',
                 'mimes:jpeg,png,jpg,gif,svg',
                 'max:10240',
-                function ($attribute, $value, $fail) use ($request, $edition) {
-                    if ($request->status == 'Published' && !$edition->cover_img && !$value) {
-                        $fail('The cover img field is required when status is Published.');
-                    }
-                },
+                Rule::requiredIf(function () use ($request) {
+                    return $request->status !== 'Draft';
+                }),
             ],
         ]);
 
@@ -183,6 +196,7 @@ class EditionController extends Controller
 
         $publishedDate = null;
         $coverPath = $edition->img_path ?? '';
+        $pdfPath = $edition->pdf_path ?? '';
         if ($request->status == 'Published') {
             $publishedDate = date('Y-m-d H:i:s');
             if ($request->hasFile('cover_img')) {
@@ -192,6 +206,15 @@ class EditionController extends Controller
 
                 $filename = 'sampul-' . $slug . '.' . $request->file('cover_img')->getClientOriginalExtension();
                 $coverPath = $request->file('cover_img')->storeAs('uploads/editions/' . $this->editionFor, $filename);
+            }
+
+            if ($request->hasFile('pdf_file')) {
+                if (Storage::exists($pdfPath)) {
+                    Storage::delete($pdfPath);
+                }
+
+                $filePdfName = 'file-' . $slug . '.' . $request->file('pdf_file')->getClientOriginalExtension();
+                $pdfPath = $request->file('pdf_file')->storeAs('uploads/editions/' . $this->editionFor, $filePdfName);
             }
         }
 
@@ -209,6 +232,7 @@ class EditionController extends Controller
                 'publish_date' => $publishedDate,
                 'edition_for' => $this->editionFor,
                 'status' => $request->status,
+                'pdf_path' => $pdfPath,
             ]);
 
             DB::commit();

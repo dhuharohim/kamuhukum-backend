@@ -41,13 +41,23 @@
                 enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                <div class="form-group" id="coverRequired"
-                    style="{{ $edition->status == 'Published' ? '' : 'display: none;' }}">
+                <div class="form-group" style="display: none;" id="coverRequired">
                     <div id="coverImage" class="card"
                         style="height:245px; width:175px; background-size:cover; background-repeat:no-repeat; background-image: url('{{ $edition->signed_edition_image }}');">
+
                     </div>
-                    <label for="cover">Cover<sup>*</sup></label>
-                    <input type="file" name="cover_img" id="cover" class="align-content-center" accept="image/*">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="cover">Cover<sup>*</sup></label>
+                            <input type="file" name="cover_img" id="cover" class="align-content-center"
+                                accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cover">Pdf File</label>
+                            <input type="file" class="align-content-center" name="pdf_file" id="pdf_file"
+                                accept=".pdf">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -129,16 +139,22 @@
 
 @section('custom_js')
     <script>
+        $(function() {
+            $('#status').trigger('change');
+            $('#status').change();
+        })
         const quill = new Quill('#editor', {
             theme: 'snow'
         });
+
+
 
         quill.on('text-change', function() {
             $('#description').val(quill.root.innerHTML);
         })
 
         $('#status').change(function() {
-            if ($(this).val() == 'Published') {
+            if ($(this).val() !== 'Draft') {
                 $('#coverRequired').slideDown();
                 $('#cover').attr('required', true);
             } else {
