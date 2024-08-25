@@ -31,6 +31,8 @@ Route::middleware(['auth:sanctum', 'check:author_law,author_economic'])->group(f
         Route::get('submission/{from}/{uuidArticle}', [JournalController::class, 'getUserArticle']);
         Route::post('submission/{from}/{step}', [JournalController::class, 'submitSubmission']);
         Route::delete('submission/{from}/{uuid}', [JournalController::class, 'deleteSubmission']);
+        Route::get('submission/{from}/{uuid}/comments', [JournalController::class, 'getArticleComments']);
+        Route::post('submission/{from}/{uuid}/send-comment', [JournalController::class, 'sendComment']);
 
         // edit profile
         Route::post('profile/{from}/{type}', [AuthController::class, 'editProfile']);

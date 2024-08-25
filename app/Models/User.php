@@ -26,6 +26,10 @@ class User extends Authenticatable
         'password',
     ];
 
+    protected $appends = [
+        'role_name'
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -59,5 +63,10 @@ class User extends Authenticatable
     public function profile()
     {
         return $this->hasOne(ProfileAuthor::class);
+    }
+
+    public function getRoleNameAttribute()
+    {
+        return $this->roles()->first()->name;
     }
 }

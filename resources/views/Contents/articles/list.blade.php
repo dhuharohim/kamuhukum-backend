@@ -70,7 +70,7 @@
                             </td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a href="{{ route('articles.show', ['editionId' => $edition->id, 'article' => $article->id]) }}"
+                                    <a href="{{ route('submissions.show', ['submission' => $article->id]) }}"
                                         class="btn btn-outline-dark btn-sm">View</a>
                                     @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
                                         <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"

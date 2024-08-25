@@ -76,4 +76,9 @@ class Article extends Model
         $this->viewed++;
         return $this->save();
     }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ArticleComment::class, 'article_id', 'id');
+    }
 }

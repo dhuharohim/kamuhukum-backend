@@ -12,62 +12,59 @@
                 <thead class="bg-primary text-white">
                     <tr>
                         <th class="">Name Article</th>
+                        <th>Related Edition</th>
                         <th>Status</th>
                         <th class=" text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($editions as $edition)
-                        @foreach ($edition->articles as $article)
-                            @if (in_array($article->status, ['submission', 'incomplete']))
-                                <tr>
-                                    <td width="70%">
-                                        <p class="mb-0 text-truncate" style="max-width: 600px;">
-                                            {{ \Illuminate\Support\Str::title($article->title) }}</p>
-                                        <ul>
-                                            @foreach ($article->authors as $author)
-                                                <li style="font-size: 12px;">{{ $author->given_name }}
-                                                    {{ $author->family_name }}
-                                                    ({{ ucwords($author->contributor_role) }})
-                                                    - {{ $author->affilation }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $badge = '';
-                                            switch ($article->status):
-                                                case 'incomplete':
-                                                    $badge = 'danger';
-                                                    break;
-                                                case 'submission':
-                                                    $badge = 'warning';
-                                                    break;
-                                                case 'review':
-                                                    $badge = 'info';
-                                                    break;
-                                                case 'production':
-                                                    $badge = 'success';
-                                                    break;
-                                                default:
-                                                    break;
-                                            endswitch;
-                                        @endphp
-                                        <span class="badge bg-{{ $badge }}">{{ ucwords($article->status) }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <a href="{{ route('articles.show', ['editionId' => $edition->id, 'article' => $article->id]) }}"
-                                                class="btn btn-outline-dark btn-sm">View</a>
-                                            @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
-                                                <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
-                                                    class="btn btn-outline-danger btn-sm">Delete</a>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
+                    @foreach ($articles as $article)
+                        @if (in_array($article->status, ['submission', 'incomplete']))
+                            <tr>
+                                <td width="50%">
+                                    <p class="mb-0 text-truncate" style="max-width: 600px;">
+                                        {{ \Illuminate\Support\Str::title($article->title) }}</p>
+                                    <ul>
+                                        @foreach ($article->authors as $author)
+                                            <li style="font-size: 12px;">{{ $author->given_name }}
+                                                {{ $author->family_name }}
+                                                ({{ ucwords($author->contributor_role) }})
+                                                - {{ $author->affilation }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+                                <td>
+                                    @if ($article->edition)
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        $badge = '';
+                                        switch ($article->status):
+                                            case 'incomplete':
+                                                $badge = 'danger';
+                                                break;
+                                            case 'submission':
+                                                $badge = 'warning';
+                                                break;
+                                            default:
+                                                break;
+                                        endswitch;
+                                    @endphp
+                                    <span class="badge bg-{{ $badge }}">{{ ucwords($article->status) }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{{ route('submissions.show', ['submission' => $article->id]) }}"
+                                            class="btn btn-outline-dark btn-sm">View</a>
+                                        {{-- @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                                            <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
+                                                class="btn btn-outline-danger btn-sm">Delete</a>
+                                        @endif --}}
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                     @endforeach
                 </tbody>
             </table>

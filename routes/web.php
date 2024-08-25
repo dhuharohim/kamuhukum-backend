@@ -38,6 +38,7 @@ Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy,editor_economy
         Route::get('{editionId}/{article}/edit', [ArticleController::class, 'edit'])->name('edit');
         Route::put('{editionId}/{article}', [ArticleController::class, 'update'])->name('update');
         Route::delete('{editionId}/{article}', [ArticleController::class, 'destroy'])->name('destroy');
+        Route::post('{articleId}/send-comment', [ArticleController::class, 'sendComment'])->name('sendComment');
     });
 
     // submissions

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleFileRequest;
 use App\Models\Announcement;
 use App\Models\Article;
+use App\Models\ArticleComment;
 use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
 use App\Models\ArticleKeyword;
@@ -203,12 +204,36 @@ class JournalController extends Controller
                 $article = Article::where('uuid', $request->uuid)
                     ->where('user_id', Auth::user()->id)
                     ->where('article_for', $from)
-                    ->update([
-                        'section' => $request->section,
-                        'comments_for_editor' => $request->comments_for_editor,
-                    ]);
+                    ->first();
+
+                if (!$article) {
+                    throw new \InvalidArgumentException;
+                }
+
+                $articleId = $article->id;
+                $article->update([
+                    'section' => $request->section,
+                    'comments_for_editor' => $request->comments_for_editor,
+                ]);
 
                 $uuid = $request->uuid;
+                if ($request->comments_for_editor) {
+                    $articleComment = ArticleComment::where('user_id', Auth::user()->id)
+                        ->where('article_id', $articleId)
+                        ->first();
+
+                    if ($articleComment) {
+                        $articleComment->update([
+                            'comments' => $request->comments_for_editor
+                        ]);
+                    } else {
+                        ArticleComment::create([
+                            'user_id' => Auth::user()->id,
+                            'article_id' => $articleId,
+                            'comments' => $request->comments_for_editor
+                        ]);
+                    }
+                }
             } else {
                 $article = Article::create([
                     'user_id' => Auth::user()->id,
@@ -222,6 +247,13 @@ class JournalController extends Controller
                 $article->update([
                     'uuid' => $uuid
                 ]);
+
+                if ($request->comments_for_editor)
+                    ArticleComment::create([
+                        'user_id' => Auth::user()->id,
+                        'article_id' => $article->id,
+                        'comments' => $request->comments_for_editor
+                    ]);
             }
 
             DB::commit();
@@ -385,9 +417,62 @@ class JournalController extends Controller
     {
         $articles = Article::where('user_id', Auth::user()->id)
             ->where('article_for', $from)
+            ->with(['comments'])
             ->get();
 
         return response(['message' => 'Success', 'data' => $articles], 200);
+    }
+
+    public function getArticleComments($from, $uuid)
+    {
+        $article = Article::where('user_id', Auth::user()->id)
+            ->where('uuid', $uuid)
+            ->where('article_for', $from)
+            ->first();
+
+        if (!$article) {
+            return recordNotFoundResponse('Artikel tidak ditemukan');
+        }
+
+        $comments = ArticleComment::where('article_id', $article->id)
+            ->with(['article', 'user'])
+            ->get();
+
+        return response(['message' => 'Success', 'data' => $comments], 200);
+    }
+
+    public function sendComment($from, $uuid, Request $request)
+    {
+        $article = Article::where('user_id', Auth::user()->id)
+            ->where('uuid', $uuid)
+            ->where('article_for', $from)
+            ->first();
+
+        if (!$article) {
+            return recordNotFoundResponse('Artikel tidak ditemukan');
+        }
+
+        $request->validate([
+            'comment' => 'required|min:1'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            ArticleComment::create([
+                'article_id' => $article->id,
+                'user_id' => Auth::user()->id,
+                'comments' => $request->comment
+            ]);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Komentar berhasil dikirim',
+                'uuid' => $article->uuid
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => $e->getMessage(), 'line' => $e->getLine()], 500);
+        }
     }
 
     public function getUserArticle($from, $uuidArticle)

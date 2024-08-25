@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backbone;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleBackboneRequest;
 use App\Models\Article;
+use App\Models\ArticleComment;
 use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
 use App\Models\ArticleKeyword;
@@ -442,5 +443,35 @@ class ArticleController extends Controller
         }
 
         return $edition;
+    }
+
+    public function sendComment(Request $request, $articleId)
+    {
+        $request->validate([
+            'comment' => 'required|min:1'
+        ]);
+
+        $article = Article::where('id', $articleId)
+            ->where('article_for', $this->articleFor)
+            ->first();
+
+        if (empty($article)) {
+            return redirect()->back()->with('message', 'Article not found');
+        }
+
+        DB::beginTransaction();
+        try {
+            ArticleComment::create([
+                'article_id' => $article->id,
+                'comments' => $request->comment,
+                'user_id' => Auth::user()->id
+            ]);
+
+            DB::commit();
+            return response()->json(['message' => 'Successfully send comment', 'comment' => $request->comment, 'commented_at' => date('d M Y H:i:s')], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error send comment', 'id' => $article->id], 500);
+        }
     }
 }
