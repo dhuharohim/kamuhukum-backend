@@ -22,7 +22,7 @@ Route::prefix('announcements')->group(function () {
 
 Route::get('home/{from}', [JournalController::class, 'getHomeData']);
 
-Route::middleware(['auth:sanctum', 'check:author_law,author_economic'])->group(function () {
+Route::middleware(['auth:sanctum', 'check:author_law,author_economy'])->group(function () {
     Route::prefix('user')->group(function () {
         Route::get('get-user-data', [AuthController::class, 'userData']);
 
