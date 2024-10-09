@@ -30,8 +30,7 @@ class UserAccessController extends Controller
     public function index()
     {
         $roles = ['editor_' . $this->userFor, 'author_' . $this->userFor];
-
-        $users = User::whereHas('roles', function ($query) use ($roles) {
+        $users = User::where('id', '!=', Auth::user()->id)->whereHas('roles', function ($query) use ($roles) {
             $query->whereIn('name', $roles);
         })->with('roles')->get();
 
@@ -227,6 +226,19 @@ class UserAccessController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::where('id', $id)->first();
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $user->delete();
+            DB::commit();
+            return response()->json(['message' => 'User deleted successfully'], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 }

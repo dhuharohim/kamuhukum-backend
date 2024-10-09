@@ -19,39 +19,27 @@ class BackboneUserSeeder extends Seeder
             [
                 'username' => 'admin_legisinsight',
                 'email' => 'admin@legisinsightjournal.com',
-                'password' => 'LegisInsightAdmin@2024!',
+                'password' => 'LegisInsightJournalAdmin@2024!',
                 'role' => 'admin_law',
             ],
             [
                 'username' => 'editor_legisinsight',
                 'email' => 'editor@legisinsightjournal.com',
-                'password' => 'LegisInsightEditor@2024!',
+                'password' => 'LegisInsightJournalEditor@2024!',
                 'role' => 'editor_law',
             ],
             [
                 'username' => 'admin_oea',
                 'email' => 'admin@oeajournal.com',
-                'password' => 'OEA@2024!',
+                'password' => 'OEAJournalAdmin@2024!',
                 'role' => 'admin_economy',
             ],
             [
                 'username' => 'editor_oea',
                 'email' => 'editor@oeajournal.com',
-                'password' => 'OEAEditor@2024!',
+                'password' => 'OEAJournalEditor@2024!',
                 'role' => 'editor_economy',
             ],
-            [
-                'username' => 'admin_law',
-                'email' => 'admin@law.com',
-                'password' => 'password',
-                'role' => 'admin_law',
-            ],
-            [
-                'username' => 'admin_eco',
-                'email' => 'admin@eco.com',
-                'password' => 'password',
-                'role' => 'admin_economy',
-            ]
         ];
 
         foreach ($users as $user) {
