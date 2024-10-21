@@ -48,8 +48,10 @@ class ArticleContributors extends Model
     public function getNameFormattedAttribute()
     {
         $preferredName = '';
-        if (!empty($this->preferred_name)) {
+        if (!empty($this->preferred_name) && $this->preferred_name !== 'null') {
             $preferredName = ' (' . $this->preferred_name . ') ';
+        } else {
+            $preferredName = '';
         }
 
         return $this->given_name . ' ' . $this->family_name . $preferredName .  ' - ' . $this->affilation;

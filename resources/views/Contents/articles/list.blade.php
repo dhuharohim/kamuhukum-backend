@@ -37,9 +37,11 @@
                                     {{ \Illuminate\Support\Str::title($article->title) }}</p>
                                 <ul>
                                     @foreach ($article->authors as $author)
-                                        <li style="font-size: 12px;">{{ $author->given_name }} {{ $author->family_name }}
-                                            ({{ ucwords($author->contributor_role) }})
-                                            - {{ $author->affilation }}</li>
+                                        <li style="font-size: 12px;">
+                                            <span class="badge bg-secondary">{{ ucwords($author->contributor_role) }}</span>
+                                            {{ $author->given_name }} {{ $author->family_name }}
+                                            - {{ $author->affilation }}
+                                        </li>
                                     @endforeach
                                 </ul>
                             </td>

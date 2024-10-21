@@ -47,4 +47,9 @@ class ArticleComment extends Model
     {
         return date('d M Y H:i:s', strtotime($this->created_at));
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(ArticleCommentAttachment::class, 'article_comment_id');
+    }
 }

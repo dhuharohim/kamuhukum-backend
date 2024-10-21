@@ -7,11 +7,13 @@ use App\Http\Requests\ArticleFileRequest;
 use App\Models\Announcement;
 use App\Models\Article;
 use App\Models\ArticleComment;
+use App\Models\ArticleCommentAttachment;
 use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
 use App\Models\ArticleKeyword;
 use App\Models\Edition;
 use App\Models\User;
+use App\Notifications\NewCommentNotification;
 use Carbon\Carbon;
 use Exception;
 use Hamcrest\Type\IsBoolean;
@@ -435,7 +437,7 @@ class JournalController extends Controller
         }
 
         $comments = ArticleComment::where('article_id', $article->id)
-            ->with(['article', 'user'])
+            ->with(['article', 'user', 'attachments'])
             ->get();
 
         return response(['message' => 'Success', 'data' => $comments], 200);
@@ -445,6 +447,7 @@ class JournalController extends Controller
     {
         $article = Article::where('user_id', Auth::user()->id)
             ->where('uuid', $uuid)
+            ->with(['editor', 'authors'])
             ->where('article_for', $from)
             ->first();
 
@@ -453,16 +456,37 @@ class JournalController extends Controller
         }
 
         $request->validate([
-            'comment' => 'required|min:1'
+            'comment' => 'required|min:1',
+            'files' => 'array',
+            'files.*' => 'file|max:10240', // 10MB max file size
         ]);
 
         DB::beginTransaction();
         try {
-            ArticleComment::create([
+            $comment = ArticleComment::create([
                 'article_id' => $article->id,
                 'user_id' => Auth::user()->id,
                 'comments' => $request->comment
             ]);
+
+            $attachments = [];
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $path = $file->storeAs('uploads/comment_attachments/' . $article->article_for, $file->getClientOriginalName(), 'public');
+                    $attachment = ArticleCommentAttachment::create([
+                        'article_comment_id' => $comment->id,
+                        'file_path' => $path,
+                        'file_name' => $file->getClientOriginalName(),
+                    ]);
+                    $attachments[] = $attachment;
+                }
+            }
+
+            // Notify the editor via email
+            $editor = $article->editor;
+            if ($editor) {
+                $editor->notify(new NewCommentNotification($article, $comment, 'editor'));
+            }
 
             DB::commit();
             return response()->json([

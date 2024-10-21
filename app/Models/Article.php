@@ -81,4 +81,9 @@ class Article extends Model
     {
         return $this->hasMany(ArticleComment::class, 'article_id', 'id');
     }
+
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'editor_id', 'id');
+    }
 }

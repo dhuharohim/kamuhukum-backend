@@ -51,6 +51,11 @@
         </nav>
         <div class="card-body">
             <!-- Assuming $article contains the article data to be edited -->
+            <div class="discussions">
+                <h4>Discussions</h4>
+                <button class="btn btn-warning btn-sm" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasComments" aria-controls="offcanvasComments">List of Discussions</button>
+            </div>
             <form class="nftmax-wc__form-main"
                 @if ($article->edition) action="{{ route('articles.update', ['editionId' => $article->edition->id, 'article' => $article->id]) }}"
                 @else
@@ -129,9 +134,9 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="slug">Slug</label>
+                            <label for="slug">URL Custom (For SEO and Google Scholar Support)</label>
                             <input type="text" class="form-control" id="slug" name="slug"
-                                placeholder="leave it blank to generate automaticly slug"
+                                placeholder="leave it blank to generate automaticly"
                                 value="{{ old('slug', $article->slug) }}">
                         </div>
                     </div>
@@ -160,14 +165,14 @@
                     <div class="header">
                         <h4>Files<sup>*</sup></h4>
                     </div>
-                    <div class="row w-100 align-items-center">
+                    {{-- <div class="row w-100 align-items-center">
                         <div class="col-md-4">
                             <input type="file" id="file" class="align-content-center">
                         </div>
                         <div class="col-md-8">
                             <button class="btn btn-info" id="addFile" type="button">Add File</button>
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="table-responsive mt-4">
                         <table class="table table-borderless table-hover table-striped" id="formFile">
                             <thead class="bg-info text-white">
@@ -194,11 +199,10 @@
                                 @foreach ($article->files as $indexFile => $file)
                                     <tr data-index="{{ $indexFile }}">
                                         <td width="60%">
-                                            <a href="{{ $file->signed_file_path }}"
-                                                target="_blank">{{ $file->file_name }}</a>
+                                            <a>{{ $file->file_name }}</a>
                                         </td>
                                         <td>
-                                            <select name="file_type[]" id="fileType" class="fileType">
+                                            <select name="file_type[]" id="fileType" class="form-control">
                                                 @foreach ($typeFiles as $type)
                                                     <option value="{{ $type }}"
                                                         {{ $file->type == $type ? 'selected' : '' }}>
@@ -207,7 +211,8 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger deleteFile">Delete</button>
+                                            <a href="{{ $file->signed_file_path }}" target="_blank" type="button"
+                                                class="btn btn-info viewFile btn-sm">View</a>
                                         </td>
                                         <td style="display: none">
                                             <input type="hidden" name="existing_files[]" value="{{ $file->id }}">
@@ -231,23 +236,23 @@
                             <thead class="bg-primary text-white">
                                 <tr>
                                     <th>Name</th>
-                                    <th>Contact</th>
+                                    <th>Contact (Email - Phone)</th>
                                     <th>Role</th>
-                                    <th>Principal Contact</th>
-                                    <th>In Browse List</th>
-                                    <th>Action</th>
+                                    {{-- <th>Principal Contact</th> --}}
+                                    {{-- <th>In Browse List</th> --}}
+                                    <th class="text-end">Action</th>
                                 </tr>
                             </thead>
                             <tbody style="font-size: 14px;">
                                 @foreach ($article->authors as $index => $c)
                                     <tr>
                                         <td>{{ $c->name_formatted }}</td>
-                                        <td>{{ $c->contact }}</td>
+                                        <td>{{ $c->email }} - {{ $c->phone ? $c->phone : 'No Phone' }}</td>
                                         <td>{{ ucfirst($c->contributor_role) }}</td>
-                                        <td>{{ $c->principal_contact == '1' ? 'on' : 'off' }}</td>
-                                        <td>{{ $c->in_browse_list == '1' ? 'on' : 'off' }}</td>
-                                        <td>
-                                            <div class="d-flex gap-2">
+                                        {{-- <td>{{ $c->principal_contact == '1' ? 'on' : 'off' }}</td>
+                                        <td>{{ $c->in_browse_list == '1' ? 'on' : 'off' }}</td> --}}
+                                        <td class="text-end">
+                                            <div class="d-flex gap-2 justify-content-end">
                                                 <button class="btn btn-info btn-sm editRow" type="button">Edit</button>
                                                 <button class="btn btn-danger btn-sm deleteRow"
                                                     type="button">Delete</button>
@@ -260,8 +265,10 @@
                                             value="{{ $c['family_name'] }}" />
                                         <input type="hidden" name="contributors[{{ $index }}][preferred_name]"
                                             value="{{ $c['preferred_name'] }}" />
-                                        <input type="hidden" name="contributors[{{ $index }}][contact]"
-                                            value="{{ $c['contact'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][email]"
+                                            value="{{ $c['email'] }}" />
+                                        <input type="hidden" name="contributors[{{ $index }}][phone]"
+                                            value="{{ $c['phone'] }}" />
                                         <input type="hidden" name="contributors[{{ $index }}][affilation]"
                                             value="{{ $c['affilation'] }}" />
                                         <input type="hidden" name="contributors[{{ $index }}][country]"
@@ -274,10 +281,10 @@
                                             value="{{ $c['bio_statement'] }}" />
                                         <input type="hidden" name="contributors[{{ $index }}][role]"
                                             value="{{ $c['contributor_role'] }}" />
-                                        <input type="hidden" name="contributors[{{ $index }}][principal_contact]"
+                                        {{-- <input type="hidden" name="contributors[{{ $index }}][principal_contact]"
                                             value="{{ $c['principal_contact'] }}" />
                                         <input type="hidden" name="contributors[{{ $index }}][in_browse_list]"
-                                            value="{{ $c['in_browse_list'] }}" />
+                                            value="{{ $c['in_browse_list'] }}" /> --}}
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -285,10 +292,12 @@
                     </div>
                 </div>
                 <div class="reference-wrapper mt-3">
-                    <h4>Reference</h4>
+                    <div class="d-flex justify-content-between mb-3 align-items-center">
+                        <h4 class="mb-0">Reference</h4>
+                        <button class="btn btn-dark" id="addRef" type="button">Add Reference</button>
+                    </div>
                     <div class="reference-body">
                         <div id="editorRef"></div>
-                        <button class="btn btn-dark mt-2" id="addRef" type="button">Add Reference</button>
                         <div class="table-responsive mt-2">
                             <table class="table table-borderless table-hover table-striped" id="formRef">
                                 <thead class="bg-dark text-white">
@@ -321,12 +330,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="discussions">
-                    <h4>Discussions</h4>
-                    <button class="btn btn-warning btn-sm" type="button" data-bs-toggle="offcanvas"
-                        data-bs-target="#offcanvasComments" aria-controls="offcanvasComments">List of Discussions</button>
-                </div>
-
                 <div class="row mt-4 mb-4">
                     <button type="submit" class="btn btn-outline-primary">Save Changes</button>
                 </div>
@@ -377,13 +380,19 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label for="contact">Contact<sup>*</sup></label>
-                                <input type="email" name="contact" id="contact" placeholder="Enter email" required>
+                                <label for="email">Email<sup>*</sup></label>
+                                <input type="email" name="email" id="email" placeholder="Enter email" required>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" name="phone" id="phone" placeholder="Enter phone">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="country">Country<sup>*</sup></label>
                                 <input type="text" name="country" id="country" required>
@@ -418,7 +427,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="row container mt-4">
+                {{-- <div class="row container mt-4">
                     <div class="col-md-6">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" role="switch" id="principal_contact"
@@ -433,7 +442,7 @@
                             <label class="form-check-label" for="in_browse_list">In Browse List</label>
                         </div>
                     </div>
-                </div>
+                </div> --}}
         </div>
         <div class="offcanvas-footer mb-2">
             <div class="row container">
@@ -455,26 +464,56 @@
             @forelse($article->comments as $comment)
                 @if (in_array($comment->user->role_name, ['author_law', 'author_economy']))
                     <!-- User Comment (Right-aligned) -->
-                    <div class="row justify-content-start w-100 mt-2">
-                        <div class="col-auto">
+                    <div class="d-block text-start w-100 mt-3">
+                        <div class="d-flex justify-content-start flex-column">
                             <small class="fw-bold">{{ $comment->user->username }}</small>
-                            <div class="card bg-light text-black p-2">
+                            <div class="card bg-light text-black p-2" style="width: fit-content; max-width: 50%;">
                                 <div>{!! $comment->comments !!}</div>
                             </div>
                         </div>
-                        <small class="text-muted"> <em>{{ $comment->commented_at }}</em></small>
+                        @if ($comment->attachments->count() > 0)
+                            <div class="d-flex flex-wrap mt-2">
+                                @foreach ($comment->attachments as $attachment)
+                                    <div class="card me-2 mb-2" style="max-width: 150px;">
+                                        <div class="card-body p-2">
+                                            <a href="{{ $attachment->signed_file_path }}" target="_blank"
+                                                class="text-decoration-none">
+                                                <small class="text-truncate d-flex"
+                                                    style="max-width: 130px;">{{ $attachment->file_name }}</small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                        <small class="text-muted"><em>{{ $comment->commented_at }}</em></small>
                     </div>
                 @endif
 
                 @if (in_array($comment->user->role_name, ['editor_law', 'admin_law', 'editor_economy', 'admin_economy']))
                     <!-- Reviewer Comment (Left-aligned) -->
-                    <div class="row justify-content-end w-100">
-                        <div class="col-auto">
-                            <div class="card bg-warning text-end mt-3 p-2">
+                    <div class="d-block text-end w-100 mt-3">
+                        <div class="d-flex justify-content-end">
+                            <div class="card bg-warning text-black p-2" style="width: fit-content; max-width: 50%;">
                                 <div>{!! $comment->comments !!}</div>
                             </div>
                         </div>
-                        <small class="text-end text-muted"><em>{{ $comment->commented_at }}</em></small>
+                        @if ($comment->attachments->count() > 0)
+                            <div class="d-flex flex-wrap mt-2 justify-content-end">
+                                @foreach ($comment->attachments as $attachment)
+                                    <div class="card mb-2" style="max-width: 150px;">
+                                        <div class="card-body p-2">
+                                            <a href="{{ $attachment->signed_file_path }}" target="_blank"
+                                                class="text-decoration-none">
+                                                <small class="text-truncate d-flex"
+                                                    style="max-width: 130px;">{{ $attachment->file_name }}</small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                        <small class="text-muted"><em>{{ $comment->commented_at }}</em></small>
                     </div>
                 @endif
             @empty
@@ -492,6 +531,10 @@
         <div class="offcanvas-footer pb-2 pt-4 bg-light">
             <div class="row container">
                 <div id="editorComment"></div>
+                <div class="mt-2">
+                    <input type="file" id="attachments" name="attachments[]" multiple class="form-control">
+                </div>
+                <div id="fileList" class="mt-2"></div>
                 <a class="btn btn-warning mt-2" onclick="sendComment()">Send</a>
             </div>
         </div>
@@ -502,6 +545,10 @@
     <script>
         var oldAbstract = `<?= old('abstract', $article->abstract) ?>`;
         const quill = new Quill('#editor', {
+            theme: 'snow'
+        });
+
+        var editorContributor = new Quill('#editorContributor', {
             theme: 'snow'
         });
 
@@ -518,6 +565,105 @@
         quill.format('color', 'black');
 
         $(document).ready(function() {
+            // Handle file selection
+            $('#attachments').on('change', function() {
+                const files = this.files;
+                let fileListHtml = $('#fileList').html() || '<ul class="list-group">';
+
+                for (let i = 0; i < files.length; i++) {
+                    const newIndex = $('#fileList .list-group-item').length + i;
+                    const fileUrl = URL.createObjectURL(files[i]);
+                    fileListHtml += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="${fileUrl}" target="_blank">${files[i].name}</a>
+                            <button type="button" class="btn btn-sm btn-danger remove-file" data-index="${newIndex}">Remove</button>
+                        </li>`;
+                }
+
+                if (!$('#fileList').html()) {
+                    fileListHtml += '</ul>';
+                }
+
+                $('#fileList').html(fileListHtml);
+            });
+
+            // Handle file removal
+            $('#fileList').on('click', '.remove-file', function() {
+                const index = $(this).data('index');
+                const dt = new DataTransfer();
+                const input = document.getElementById('attachments');
+                const {
+                    files
+                } = input;
+
+                for (let i = 0; i < files.length; i++) {
+                    if (index !== i)
+                        dt.items.add(files[i]);
+                }
+
+                input.files = dt.files;
+                $(this).parent().remove();
+            });
+
+            // Modify sendComment function to include file attachments
+            window.sendComment = function() {
+                var comment = quillComment.root.innerHTML;
+                var strippedComment = quillComment.root.innerText.trim();
+                var attachments = $('#attachments')[0].files;
+
+                if (strippedComment.length === 0 && attachments.length === 0) {
+                    iziToast.error({
+                        title: 'Error',
+                        message: 'Comment is empty and no files attached',
+                        position: 'topRight'
+                    });
+                    return;
+                }
+
+                var articleId = '{{ $article->id }}';
+                var formData = new FormData();
+                formData.append('comment', comment);
+
+                for (let i = 0; i < attachments.length; i++) {
+                    formData.append('attachments[]', attachments[i]);
+                }
+
+                $.ajax({
+                    url: '/articles/' + articleId + '/send-comment',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        console.log(response);
+                        quillComment.setContents('');
+                        $('#attachments').val('');
+                        $('#fileList').empty();
+                        $('#comments').append(`
+                        <div class="row justify-content-end w-100">
+                            <div class="col-auto">
+                                <div class="card bg-warning text-end mt-3 p-2">
+                                    <div>${response.comment}</div>
+                                    ${response.attachments ? `<div class="mt-2"><strong>Attachments:</strong> ${response.attachments}</div>` : ''}
+                                </div>
+                            </div>
+                            <small class="text-end text-muted"><em>${response.commented_at}</em></small>
+                        </div>
+                    `);
+                    },
+                    error: function(response) {
+                        console.log(response);
+                        iziToast.error({
+                            title: 'Error',
+                            message: 'Failed to send comment',
+                            position: 'topRight'
+                        });
+                    }
+                });
+            };
             $('#keywords').selectize({
                 create: true,
                 plugins: ["restore_on_backspace", "clear_button"],
@@ -525,7 +671,21 @@
                     $('#keywordsHidden').val(val);
                 }
             });
+            $('#status').change(function() {
+                var status = $(this).val();
+                var editionField = $('#edition');
 
+                if (status !== 'submission' && status !== 'incomplete' && status !== 'review') {
+                    editionField.prop('required', true);
+                    editionField.closest('.form-group').find('label').append('<sup>*</sup>');
+                } else {
+                    editionField.prop('required', false);
+                    editionField.closest('.form-group').find('label sup').remove();
+                }
+            });
+
+            // Trigger the change event on page load to set initial state
+            $('#status').trigger('change');
 
             $('#addFile').click(function() {
                 const fileInput = $('#file')[0];
@@ -586,7 +746,7 @@
                         </select>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger deleteFile">Delete</button>
+                        <button type="button" class="btn btn-danger viewFile">viewFile</button>
                     </td>
                     <td style="display:none">
                         <input type="file" name="article_files[${fileIndex}][file]" style="display:none;" data-filename="${file.name}" />
@@ -627,15 +787,13 @@
                 var lastName = formData.find(input => input.name === 'family_name')?.value;
                 var alias = formData.find(input => input.name === 'preferred_name')?.value;
                 var affilation = formData.find(input => input.name === 'affilation')?.value;
-                var contact = formData.find(input => input.name === 'contact')?.value;
+                var email = formData.find(input => input.name === 'email')?.value;
+                var phone = formData.find(input => input.name === 'phone')?.value;
                 var country = formData.find(input => input.name === 'country')?.value;
                 var homepageUrl = formData.find(input => input.name === 'homepage_url')?.value;
                 var role = formData.find(input => input.name === 'role')?.value;
                 var bioStatement = formData.find(input => input.name === 'bio_statement')?.value;
-                var principalContact = formData.find(input => input.name === 'principal_contact')?.value ||
-                    'off';
-                var inBrowseList = formData.find(input => input.name === 'in_browse_list')?.value || 'off';
-                var orcidId = formData.find(input => input.name === 'orcid_id')?.value || 'off';
+                var orcidId = formData.find(input => input.name === 'orcid_id')?.value;
 
                 var name = firstName + ' ' + lastName;
                 if (alias) {
@@ -646,14 +804,14 @@
                     name += ' - ' + affilation;
                 }
 
+                var contact = email + (phone ? ' - ' + phone : '');
+
                 if (editIndex !== '') {
                     var row = $('#contributorList tbody tr').eq(editIndex);
                     //replace data table
                     row.find('td').eq(0).text(name);
                     row.find('td').eq(1).text(contact);
                     row.find('td').eq(2).text(role);
-                    row.find('td').eq(3).text(principalContact);
-                    row.find('td').eq(4).text(inBrowseList);
 
                     let contributorIndex = row.find('input:first').data('index');
                     // replace data input
@@ -665,17 +823,15 @@
                         alias);
                     row.find('input[name="contributors[' + contributorIndex + '][affilation]"]').val(
                         affilation);
-                    row.find('input[name="contributors[' + contributorIndex + '][contact]"]').val(contact);
+                    row.find('input[name="contributors[' + contributorIndex + '][email]"]').val(email);
+                    row.find('input[name="contributors[' + contributorIndex + '][phone]"]').val(phone);
                     row.find('input[name="contributors[' + contributorIndex + '][country]"]').val(country);
                     row.find('input[name="contributors[' + contributorIndex + '][homepage_url]"]').val(
                         homepageUrl);
                     row.find('input[name="contributors[' + contributorIndex + '][role]"]').val(role);
                     row.find('input[name="contributors[' + contributorIndex + '][bio_statement]"]').val(
                         bioStatement);
-                    row.find('input[name="contributors[' + contributorIndex + '][principal_contact]"]').val(
-                        principalContact);
-                    row.find('input[name="contributors[' + contributorIndex + '][in_browse_list]"]').val(
-                        inBrowseList);
+                    row.find('input[name="contributors[' + contributorIndex + '][orcid_id]"]').val(orcidId);
                 } else {
                     var row = $('#contributorList tbody tr:last');
                     let contributorIndex = 0;
@@ -690,27 +846,23 @@
                         <td>${name}</td>
                         <td>${contact}</td>
                         <td>${role}</td>
-                        <td>${principalContact}</td>
-                        <td>${inBrowseList}</td>
-                        <td>
-                            <div class="d-flex gap-2">
+                        <td class="text-end">
+                            <div class="d-flex gap-2 justify-content-end">
                                 <button class="btn btn-info btn-sm editRow" type="button">Edit</button>
                                 <button class="btn btn-danger btn-sm deleteRow" type="button">Delete</button>
                             </div>
                         </td>
-                        // Form Data
                         <input type="hidden" data-index="${contributorIndex}" name="contributors[${contributorIndex}][given_name]" value="${firstName}" />
                         <input type="hidden" name="contributors[${contributorIndex}][family_name]" value="${lastName}" />
                         <input type="hidden" name="contributors[${contributorIndex}][preferred_name]" value="${alias}" />
-                        <input type="hidden" name="contributors[${contributorIndex}][contact]" value="${contact}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][email]" value="${email}"/>
+                        <input type="hidden" name="contributors[${contributorIndex}][phone]" value="${phone}"/>
                         <input type="hidden" name="contributors[${contributorIndex}][affilation]" value="${affilation}"/>
                         <input type="hidden" name="contributors[${contributorIndex}][country]" value="${country}"/>
                         <input type="hidden" name="contributors[${contributorIndex}][homepage_url]" value="${homepageUrl}"/>
                         <input type="hidden" name="contributors[${contributorIndex}][orcid_id]" value="${orcidId}"/>
                         <input type="hidden" name="contributors[${contributorIndex}][bio_statement]" value="${bioStatement}"/>
                         <input type="hidden" name="contributors[${contributorIndex}][role]" value="${role}"/>
-                        <input type="hidden" name="contributors[${contributorIndex}][principal_contact]" value="${principalContact}"/>
-                        <input type="hidden" name="contributors[${contributorIndex}][in_browse_list]" value="${inBrowseList}"/>
                     </tr>
                     `
 
@@ -719,7 +871,7 @@
                 }
 
                 // Remove the placeholder message if it exists
-                $('#contributorList tbody').find('.text-muted.text').closest('tr').remove();
+                $('#contributorList tbody').find('.text-muted').closest('tr').remove();
                 $('#editIndex').val('');
                 $('#closeCanvas').click();
                 // Optionally, clear the form fields after submission
@@ -733,46 +885,27 @@
 
                 // Populate the form fields with the row's data
                 $('#given_name').val(row.find('input[name="contributors[' + contributorIndex +
-                        '][given_name]"]')
-                    .val());
+                    '][given_name]"]').val() || '');
                 $('#family_name').val(row.find('input[name="contributors[' + contributorIndex +
-                        '][family_name]"]')
-                    .val());
+                    '][family_name]"]').val() || '');
                 $('#preferred_name').val(row.find('input[name="contributors[' + contributorIndex +
-                    '][preferred_name]"]').val());
+                    '][preferred_name]"]').val() || '');
                 $('#affilation').val(row.find('input[name="contributors[' + contributorIndex +
-                        '][affilation]"]')
-                    .val());
-                $('#contact').val(row.find('input[name="contributors[' + contributorIndex + '][contact]"]')
-                    .val());
+                    '][affilation]"]').val() || '');
+                $('#email').val(row.find('input[name="contributors[' + contributorIndex + '][email]"]')
+                    .val() || '');
+                $('#phone').val(row.find('input[name="contributors[' + contributorIndex + '][phone]"]')
+                    .val() || '');
                 $('#country').val(row.find('input[name="contributors[' + contributorIndex + '][country]"]')
-                    .val());
+                    .val() || '');
                 $('#homepage_url').val(row.find('input[name="contributors[' + contributorIndex +
-                        '][homepage_url]"]')
-                    .val());
+                    '][homepage_url]"]').val() || '');
                 $('#bio_statement').val(row.find('input[name="contributors[' + contributorIndex +
-                        '][bio_statement]"]')
-                    .val());
-
+                    '][bio_statement]"]').val() || '');
                 $('#role').val(row.find('input[name="contributors[' + contributorIndex + '][role]"]')
-                    .val());
-
+                    .val() || '');
                 $('#orcid_id').val(row.find('input[name="contributors[' + contributorIndex +
-                    '][orcid_id]"]').val());
-
-                if (row.find('input[name="contributors[' + contributorIndex + '][principal_contact]"')
-                    .val() == 'on' || row.find('input[name="contributors[' + contributorIndex +
-                        '][principal_contact]"')
-                    .val() == '1') {
-                    $('#principal_contact').attr('checked', true);
-                }
-
-                if (row.find('input[name="contributors[' + contributorIndex + '][in_browse_list]').val() ==
-                    'on' || row.find('input[name="contributors[' + contributorIndex + '][in_browse_list]')
-                    .val() ==
-                    '1') {
-                    $('#in_browse_list').attr('checked', true);
-                }
+                    '][orcid_id]"]').val() || '');
 
                 // Set the edit index
                 $('#editIndex').val(rowIndex);
@@ -852,51 +985,6 @@
 
             quillInstances[`editorRef-${refCount}`].on('text-change', function() {
                 $(`#reference-${refCount}`).val(quillInstances[`editorRef-${refCount}`].root.innerHTML);
-            });
-        }
-
-        function sendComment() {
-            var comment = quillComment.root.innerHTML;
-            var strippedComment = quillComment.root.innerText.trim();
-
-            if (strippedComment.length === 0) {
-                iziToast.error({
-                    title: 'Error',
-                    message: 'Comment is empty',
-                    position: 'topRight'
-                });
-
-                return;
-            }
-
-            var articleId = '{{ $article->id }}';
-
-            $.ajax({
-                url: '/articles/' + articleId + '/send-comment',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                method: 'POST',
-                data: {
-                    comment: comment
-                },
-                success: function(response) {
-                    console.log(response);
-                    quillComment.setContents('');
-                    $('#comments').append(`
-                    <div class="row justify-content-end w-100">
-                        <div class="col-auto">
-                            <div class="card bg-warning text-end mt-3 p-2">
-                                <div>${ response.comment }</div>
-                            </div>
-                        </div>
-                        <small class="text-end text-muted"><em>${response.commented_at}</em></small>
-                    </div>
-                `)
-                },
-                error: function(response) {
-                    console.log(response);
-                }
             });
         }
     </script>

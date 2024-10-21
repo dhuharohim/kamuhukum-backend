@@ -3,28 +3,34 @@
 namespace App\Http\Controllers\Backbone;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EditorAssignedMail;
 use App\Models\Article;
 use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
 use App\Models\ArticleKeyword;
 use App\Models\ArticleReference;
 use App\Models\Edition;
+use App\Models\User;
+use App\Notifications\EditorAssignedNotification;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 
 class SubmissionController extends Controller
 {
-    private $editionFor;
+    protected $submissionFor;
+    protected $isAdmin;
+
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            $user = Auth::user();
-            $this->editionFor = $user->hasRole(['admin_law', 'editor_law']) ? 'law' : 'economic';
+            $this->submissionFor = Auth::user()->hasRole(['admin_law', 'editor_law']) ? 'law' : 'economic';
+            $this->isAdmin = Auth::user()->hasRole(['admin_law', 'admin_economy']);
             return $next($request);
         });
     }
@@ -34,12 +40,25 @@ class SubmissionController extends Controller
      */
     public function index()
     {
-        $articles = Article::where('article_for', $this->editionFor)
-            ->where('status', 'submission', 'incomplete')
-            ->with('edition')
-            ->get();
+        $query = Article::query()
+            ->where('article_for', $this->submissionFor)
+            ->whereIn('status', ['submission', 'incomplete', 'review'])
+            ->with(['edition', 'editor']);
 
-        return view('Contents.submission.list')->with('articles', $articles);
+        if (!$this->isAdmin) {
+            $query->where('editor_id', Auth::id());
+        }
+
+        $editors = [];
+        if ($this->isAdmin) {
+            $editors = User::whereHas('roles', function ($query) {
+                $query->where('name', 'editor_' . $this->submissionFor);
+            })->get();
+        }
+
+        $articles = $query->get();
+
+        return view('contents.submission.list', ['articles' => $articles, 'isAdmin' => $this->isAdmin, 'editors' => $editors]);
     }
 
     /**
@@ -63,14 +82,21 @@ class SubmissionController extends Controller
      */
     public function show(string $id)
     {
-        $article = Article::where('id', $id)->with(['keywords', 'references', 'edition', 'authors', 'files', 'user', 'comments.user'])->first();
+        $article = Article::where('id', $id)
+            ->with(['keywords', 'references', 'edition', 'authors', 'files', 'user', 'comments.user', 'comments.attachments'])
+            ->first();
+
         if (!$article) {
             return redirect()->back()->with('message', 'Article not found');
         }
 
-        $editions = Edition::where('edition_for', $this->editionFor)->get();
+        if (!$this->isAdmin && $article->editor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        return view('Contents.submission.show')->with(['article' => $article,  'editions' => $editions]);
+        $editions = Edition::where('edition_for', $this->submissionFor)->get();
+
+        return view('Contents.submission.show')->with(['article' => $article, 'editions' => $editions]);
     }
 
     /**
@@ -86,10 +112,22 @@ class SubmissionController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $article = Article::where('id', $id)
+            ->where('article_for', $this->submissionFor)
+            ->first();
+
+        if (!$article) {
+            return redirect()->back()->with('message', 'Article not found');
+        }
+
+        if (!$this->isAdmin && $article->editor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $editionId = null;
         if (isset($request->edition)) {
             $edition = Edition::where('id', $request->edition)
-                ->where('edition_for', $this->editionFor)
+                ->where('edition_for', $this->submissionFor)
                 ->first();
 
             if (empty($edition)) {
@@ -99,17 +137,9 @@ class SubmissionController extends Controller
             $editionId = $edition->id;
         }
 
-        $article = Article::where('id', $id)
-            ->where('article_for', $this->editionFor)
-            ->first();
-
-        if (empty($article)) {
-            return redirect()->back()->with('message', 'Article not found');
-        }
-
         $slug = $request->slug;
         if (empty($slug)) {
-            $slug = Str::slug($request->title . '-' . $this->editionFor);
+            $slug = Str::slug($request->title . '-' . $this->submissionFor);
         }
 
         $publishedDate = null;
@@ -216,13 +246,13 @@ class SubmissionController extends Controller
                         $filename = 'file-' . $slug . '.' . $uploadedFile->getClientOriginalExtension();
 
                         // Store the file and get the storage path
-                        $uploadedFile->storeAs('uploads/articles/' . $this->editionFor, $filename, 'public');
+                        $uploadedFile->storeAs('uploads/articles/' . $this->submissionFor, $filename, 'public');
 
                         // Save file info in the database
                         ArticleFile::create([
                             'article_id' => $article->id, // Replace with actual article ID
                             'file_name' => $filename,
-                            'file_path' => 'uploads/articles/' . $this->editionFor . '/' . $filename,
+                            'file_path' => 'uploads/articles/' . $this->submissionFor . '/' . $filename,
                             'type' => $file['type']
                         ]);
                     }
@@ -243,5 +273,49 @@ class SubmissionController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function assignEditor(Request $request)
+    {
+        if (!$this->isAdmin) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'articleId' => 'required|exists:articles,id',
+            'editorId' => 'required|exists:users,id',
+            'notifyEmail' => 'required|string|in:true,false'
+        ]);
+
+        $article = Article::with('authors')->findOrFail($request->articleId);
+        $editor = User::findOrFail($request->editorId);
+
+        // Check if the editor has the correct role
+        if (!$editor->hasRole('editor_' . $this->submissionFor)) {
+            return response()->json(['error' => 'Selected user is not an editor for this submission type.'], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $article->editor_id = $editor->id;
+            $article->assigned_on = now();
+            $article->save();
+
+            if ($request->input('notifyEmail') === 'true') {
+                $editor->notify(new EditorAssignedNotification($article, $editor));
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to assign editor: ' . $e->getMessage()], 500);
+        }
+
+        $message = 'Editor assigned successfully.';
+        if ($request->input('notifyEmail') === 'true') {
+            $message .= ' Editor notification queued for sending.';
+        }
+
+        return response()->json(['message' => $message]);
     }
 }

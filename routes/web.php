@@ -43,6 +43,7 @@ Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy,editor_economy
 
     // submissions
     Route::resource('submissions', SubmissionController::class);
+    Route::post('assign-editor', [SubmissionController::class, 'assignEditor'])->name('submissions.assignEditor');
 });
 
 Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy'])->group(function () {

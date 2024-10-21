@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleBackboneRequest;
 use App\Models\Article;
 use App\Models\ArticleComment;
+use App\Models\ArticleCommentAttachment;
 use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
 use App\Models\ArticleKeyword;
 use App\Models\ArticleReference;
 use App\Models\Edition;
+use App\Notifications\NewCommentNotification;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -448,7 +450,8 @@ class ArticleController extends Controller
     public function sendComment(Request $request, $articleId)
     {
         $request->validate([
-            'comment' => 'required|min:1'
+            'comment' => 'required|min:1',
+            'attachments.*' => 'file|max:10240', // 10MB max file size
         ]);
 
         $article = Article::where('id', $articleId)
@@ -461,14 +464,39 @@ class ArticleController extends Controller
 
         DB::beginTransaction();
         try {
-            ArticleComment::create([
+            $comment = ArticleComment::create([
                 'article_id' => $article->id,
                 'comments' => $request->comment,
                 'user_id' => Auth::user()->id
             ]);
 
+            $attachments = [];
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $path = $file->storeAs('uploads/comment_attachments/' . $article->article_for, $file->getClientOriginalName(), 'public');
+                    $attachment = ArticleCommentAttachment::create([
+                        'article_comment_id' => $comment->id,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                    ]);
+
+                    $attachments[] = $attachment->file_name;
+                }
+            }
+
+            // Send notification to author
+            $author = $article->user;
+            if ($author) {
+                $author->notify(new NewCommentNotification($article, $comment, $attachments, $this->articleFor));
+            }
+
             DB::commit();
-            return response()->json(['message' => 'Successfully send comment', 'comment' => $request->comment, 'commented_at' => date('d M Y H:i:s')], 200);
+            return response()->json([
+                'message' => 'Successfully send comment',
+                'comment' => $request->comment,
+                'commented_at' => date('d M Y H:i:s'),
+                'attachments' => $attachments
+            ], 200);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Error send comment', 'id' => $article->id], 500);

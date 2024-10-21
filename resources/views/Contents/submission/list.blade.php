@@ -11,69 +11,208 @@
             <table class="table table-borderless table-striped table-hover" id="articleTable">
                 <thead class="bg-primary text-white">
                     <tr>
-                        <th class="">Name Article</th>
+                        <th>Article</th>
                         <th>Related Edition</th>
                         <th>Status</th>
-                        <th class=" text-end">Action</th>
+                        @if ($isAdmin)
+                            <th>Editor</th>
+                        @endif
+                        <th>Assigned On</th>
+                        <th class="text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($articles as $article)
-                        @if (in_array($article->status, ['submission', 'incomplete']))
-                            <tr>
-                                <td width="50%">
-                                    <p class="mb-0 text-truncate" style="max-width: 600px;">
-                                        {{ \Illuminate\Support\Str::title($article->title) }}</p>
-                                    <ul>
-                                        @foreach ($article->authors as $author)
-                                            <li style="font-size: 12px;">{{ $author->given_name }}
-                                                {{ $author->family_name }}
-                                                ({{ ucwords($author->contributor_role) }})
-                                                - {{ $author->affilation }}</li>
-                                        @endforeach
-                                    </ul>
-                                </td>
+                        <tr>
+                            <td>
+                                <p class="mb-0 text-truncate" style="max-width: 400px;">
+                                    {{ \Illuminate\Support\Str::title($article->title) }}</p>
+                                <ul class="list-unstyled mt-1">
+                                    @foreach ($article->authors as $author)
+                                        <li class="text-muted" style="font-size: 12px;">
+                                            <span class="badge bg-secondary">{{ ucwords($author->contributor_role) }}</span>
+                                            {{ $author->given_name }} {{ $author->family_name }}
+                                            - {{ $author->affilation }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                            <td>
+                                @if ($article->edition)
+                                    <span class="badge bg-primary">{{ $article->edition->name_edition }}</span>
+                                @else
+                                    <span class="badge bg-danger">No Edition</span>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $badge = '';
+                                    switch ($article->status):
+                                        case 'incomplete':
+                                            $badge = 'danger';
+                                            break;
+                                        case 'submission':
+                                            $badge = 'warning';
+                                            break;
+                                        case 'review':
+                                            $badge = 'info';
+                                            break;
+                                        default:
+                                            break;
+                                    endswitch;
+                                @endphp
+                                <span class="badge bg-{{ $badge }}">{{ ucwords($article->status) }}</span>
+                            </td>
+                            @if ($isAdmin)
                                 <td>
-                                    @if ($article->edition)
+                                    <small>
+                                        @if ($article->editor)
+                                            {{ $article->editor->username }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </small>
+                                </td>
+                            @endif
+                            <td>
+                                <small>
+                                    @if ($article->assigned_on)
+                                        {{ !empty($article->assigned_on) ? date('d M Y h:i:s', strtotime($article->assigned_on)) : '' }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
                                     @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $badge = '';
-                                        switch ($article->status):
-                                            case 'incomplete':
-                                                $badge = 'danger';
-                                                break;
-                                            case 'submission':
-                                                $badge = 'warning';
-                                                break;
-                                            default:
-                                                break;
-                                        endswitch;
-                                    @endphp
-                                    <span class="badge bg-{{ $badge }}">{{ ucwords($article->status) }}</span>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-end gap-2">
-                                        <a href="{{ route('submissions.show', ['submission' => $article->id]) }}"
-                                            class="btn btn-outline-dark btn-sm">View</a>
-                                        {{-- @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
-                                            <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
-                                                class="btn btn-outline-danger btn-sm">Delete</a>
-                                        @endif --}}
-                                    </div>
-                                </td>
-                            </tr>
-                        @endif
+                                </small>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('submissions.show', ['submission' => $article->id]) }}"
+                                        class="btn btn-outline-dark btn-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    @if ($isAdmin)
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#assignEditorModal" data-article-id="{{ $article->id }}">
+                                            <i class="fas fa-user-plus"></i> Assign
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     </div>
+    @if ($isAdmin)
+        <!-- Modal -->
+        <div class="modal fade nftmax-preview__modal" id="assignEditorModal" tabindex="-1"
+            aria-labelledby="assignEditorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered nftmax-close__modal-close">
+                <div class="modal-content nftmax-preview__modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assignEditorModalLabel">Assign Editor</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body nftmax-modal__body modal-body nftmax-close__body">
+                        <!-- Add form for assigning editor here -->
+                        <form id="assignEditorForm">
+                            <input type="hidden" id="articleId" name="articleId">
+                            <div class="mb-3">
+                                <label for="editorSelect" class="form-label">Select Editor</label>
+                                <select class="form-select" id="editorSelect" name="editorId" required>
+                                    <option value="">Select Editor</option>
+                                    <!-- Populate this dropdown with available editors -->
+                                    @foreach ($editors as $editor)
+                                        <option value="{{ $editor->id }}">{{ $editor->username }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="notifyEmail" name="notifyEmail" checked>
+                                <label class="form-check-label" for="notifyEmail">Notify via email</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="nftmax__item-button--group">
+                            <button type="button"
+                                class="text-black nftmax__item-button--single nftmax-btn nftmax-btn__bordered--plus radius"
+                                data-bs-dismiss="modal">Close</button>
+                            <button type="button"
+                                class="text-black btn btn-primary nftmax__item-button--single nftmax-btn nftmax-btn__bordered--plus radius"
+                                id="saveAssignment">
+                                <span class="spinner-border spinner-border-sm d-none" role="status"
+                                    aria-hidden="true"></span>
+                                Save changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    @endif
 @endsection
 
 @section('custom_js')
     <script>
+        $(function() {
+            // Handle the "Assign Editor" modal
+            $('#assignEditorModal').on('show.bs.modal', function(event) {
+                const button = $(event.relatedTarget);
+                const articleId = button.data('article-id');
+                $('#articleId').val(articleId);
+
+                // Reset form fields
+                $('#editorSelect').val('');
+                $('#notifyEmail').prop('checked', true);
+            });
+
+            // Handle the "Save changes" button click
+            $('#saveAssignment').click(function() {
+                var articleId = $('#articleId').val();
+                var editorId = $('#editorSelect').val();
+                var notifyEmail = $('#notifyEmail').is(':checked');
+
+                // Show loading spinner
+                $('#saveAssignment .spinner-border').removeClass('d-none');
+                $('#saveAssignment').prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ route('submissions.assignEditor') }}',
+                    method: 'POST',
+                    data: {
+                        articleId: articleId,
+                        editorId: editorId,
+                        notifyEmail: notifyEmail ? true : false,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        var modal = bootstrap.Modal.getInstance(document.getElementById(
+                            'assignEditorModal'));
+                        modal.hide();
+                        iziToast.success({
+                            title: 'Success',
+                            message: response.message,
+                            position: 'topRight'
+                        });
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseJSON);
+                        iziToast.error({
+                            title: 'Error',
+                            message: xhr.responseJSON.error ||
+                                'An error occurred while assigning the editor.',
+                            position: 'topRight'
+                        });
+                    },
+                    complete: function() {
+                        // Hide loading spinner
+                        $('#saveAssignment .spinner-border').addClass('d-none');
+                        $('#saveAssignment').prop('disabled', false);
+                    }
+                });
+            });
+        })
         let table = new DataTable('#articleTable');
 
         function confirmDelete(editionId, id) {
