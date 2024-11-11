@@ -272,7 +272,8 @@ class ArticleController extends Controller
                 // 'comments_for_editor' ,
                 'abstract' => $request->abstract,
                 'slug' => $slug,
-                'published_date' => $publishedDate
+                'published_date' => $publishedDate,
+                'doi_link' => $request->doi_link
             ]);
 
             // article keywords
