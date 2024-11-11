@@ -204,9 +204,9 @@ class SubmissionController extends Controller
                         'orcid_id' => $contributor['orcid_id'],
                         // 'mailing_address' => $contributor->,
                         'bio_statement' => $contributor['bio_statement'],
-                        // 'reviewing_interest',
-                        'principal_contact' => $contributor['principal_contact'] == 'on' ? '1' : '0',
-                        'in_browse_list' => $contributor['in_browse_list'] == 'on' ? '1' : '0'
+                        // // 'reviewing_interest',
+                        // 'principal_contact' => $contributor['principal_contact'] == 'on' ? '1' : '0',
+                        // 'in_browse_list' => $contributor['in_browse_list'] == 'on' ? '1' : '0'
                     ]);
                 }
             }
