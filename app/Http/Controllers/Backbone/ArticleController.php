@@ -307,7 +307,8 @@ class ArticleController extends Controller
                         'contributor_role' => $contributor['role'],
                         'given_name' => $contributor['given_name'],
                         'family_name' => $contributor['family_name'],
-                        'contact' => $contributor['contact'],
+                        'email' => $contributor['email'],
+                        'phone' => $contributor['phone'],
                         'preferred_name' => $contributor['preferred_name'],
                         'affilation' => $contributor['affilation'],
                         'country' => $contributor['country'],
@@ -317,8 +318,8 @@ class ArticleController extends Controller
                         // 'mailing_address' => $contributor->,
                         'bio_statement' => $contributor['bio_statement'],
                         // 'reviewing_interest',
-                        'principal_contact' => $contributor['principal_contact'] == 'on' ? '1' : '0',
-                        'in_browse_list' => $contributor['in_browse_list'] == 'on' ? '1' : '0'
+                        // 'principal_contact' => $contributor['principal_contact'] == 'on' ? '1' : '0',
+                        // 'in_browse_list' => $contributor['in_browse_list'] == 'on' ? '1' : '0'
                     ]);
                 }
             }
