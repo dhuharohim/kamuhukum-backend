@@ -58,7 +58,7 @@ class SubmissionController extends Controller
 
         $articles = $query->get();
 
-        return view('contents.submission.list', ['articles' => $articles, 'isAdmin' => $this->isAdmin, 'editors' => $editors]);
+        return view('Contents.submission.list', ['articles' => $articles, 'isAdmin' => $this->isAdmin, 'editors' => $editors]);
     }
 
     /**
