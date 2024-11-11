@@ -28,7 +28,8 @@ class Article extends Model
         'abstract',
         'slug',
         'viewed',
-        'published_date'
+        'published_date',
+        'doi_link'
     ];
 
     /**
