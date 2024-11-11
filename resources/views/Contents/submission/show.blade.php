@@ -147,18 +147,34 @@
                     <input type="hidden" name="abstract" id="abstract" required
                         value="{{ old('abstract', $article->abstract) }}" />
                 </div>
-                <div class="form-group">
-                    <label for="keywords">Keywords</label>
-                    @php
-                        $keywordsVal = $article->keywords->pluck('keyword')->implode(', ');
-                    @endphp
-                    <select id="keywords" multiple>
-                        @foreach ($article->keywords as $keyword)
-                            <option value="{{ $keyword->keyword }}" selected>{{ $keyword->keyword }}</option>
-                        @endforeach
-                    </select>
-                    <input type="hidden" name="keywords" id="keywordsHidden" value="{{ old('keywords', $keywordsVal) }}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="form-group">
+                                <label for="keywords">Keywords</label>
+                                @php
+                                    $keywordsVal = $article->keywords->pluck('keyword')->implode(', ');
+                                @endphp
+                                <select id="keywords" multiple>
+                                    @foreach ($article->keywords as $keyword)
+                                        <option value="{{ $keyword->keyword }}" selected>{{ $keyword->keyword }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="keywords" id="keywordsHidden"
+                                    value="{{ old('keywords', $keywordsVal) }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="doi_link">DOI Link</label>
+                            <input type="text" name="doi_link" id="doi_link"
+                                placeholder="Enter DOI Link if already exist"
+                                value="{{ old('doi_link', $article->doi_link) }}">
+                        </div>
+                    </div>
                 </div>
+
 
                 <!-- File upload section -->
                 <div class="files-wrapper mt-4">

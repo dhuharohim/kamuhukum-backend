@@ -158,7 +158,8 @@ class SubmissionController extends Controller
                 'abstract' => $request->abstract,
                 'slug' => $slug,
                 'published_date' => $publishedDate,
-                'edition_id' => $editionId
+                'edition_id' => $editionId,
+                'doiLink' => $request->doiLink
             ]);
 
             // article keywords
