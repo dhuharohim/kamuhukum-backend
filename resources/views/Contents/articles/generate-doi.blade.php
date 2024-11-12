@@ -144,7 +144,7 @@
                         message: 'DOI generated successfully',
                         position: 'topRight'
                     });
-                    // location.reload();
+                    window.location.href = "{{ route('articles.index', $edition->id) }}";
                 },
                 error: function(error) {
                     iziToast.error({
@@ -152,7 +152,7 @@
                         message: 'Failed to generate DOI',
                         position: 'topRight'
                     });
-                    // location.reload();
+                    window.location.reload();
                 }
             });
         }
