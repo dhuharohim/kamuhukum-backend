@@ -13,10 +13,15 @@
                 </li>
             </ol>
         </nav>
-        <div class="nftmax-table__heading">
-            <h3 class="nftmax-table__title mb-0">Article List on {{ $edition->edition_name_formatted }}</h3>
+        <div class="row justify-content-between align-items-center">
+            <h3 class="nftmax-table__title mb-0 col-md-6">Article List on {{ $edition->edition_name_formatted }}</h3>
             @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
-                <a href="{{ route('articles.create', $edition->id) }}" class="btn btn-primary">Add Article</a>
+                <div class="d-flex gap-2 col-md-6 justify-content-end">
+                    <a href="{{ route('articles.create', $edition->id) }}" class="btn btn-primary">Add Article</a>
+                    <a href="{{ route('articles.generateDoi', $edition->id) }}" class="btn btn-outline-success">Generate
+                        DOI
+                        Links</a>
+                </div>
             @endif
         </div>
         <div class="table-responsive">
@@ -73,16 +78,39 @@
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{{ route('submissions.show', ['submission' => $article->id]) }}"
-                                        class="btn btn-outline-dark btn-sm">View</a>
+                                        class="btn btn-outline-dark btn-sm"><i class="fa fa-eye"></i></a>
                                     @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
                                         <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
-                                            class="btn btn-outline-danger btn-sm">Delete</a>
+                                            class="btn btn-outline-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                    @endif
+                                    @if ($article->status == 'production' && !empty($article->doi_link))
+                                        <a href="{{ $article->doi_link_formatted }}" target="_blank"
+                                            class="btn btn-outline-success btn-sm"><i class="fa fa-link"></i></a>
                                     @endif
                                 </div>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="bg-primary text-white">
+                            <div class="d-flex justify-content-start gap-2">
+                                <span class="badge bg-dark">
+                                    <i class="fa fa-eye"></i> View article details
+                                </span>
+                                @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                                    <span class="badge bg-danger">
+                                        <i class="fa fa-trash"></i> Delete article
+                                    </span>
+                                @endif
+                                <span class="badge bg-success">
+                                    <i class="fa fa-link"></i> DOI link (for published articles)
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>

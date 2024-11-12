@@ -32,6 +32,13 @@ class Article extends Model
         'doi_link'
     ];
 
+    protected $appends = ['doi_link_formatted'];
+
+    public function getDoiLinkFormattedAttribute()
+    {
+        return $this->doi_link ? 'https://doi.org/' . $this->doi_link : '';
+    }
+
     /**
      * Activity log options.
      *

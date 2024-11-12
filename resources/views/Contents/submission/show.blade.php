@@ -166,12 +166,13 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="doi_link">DOI Link</label>
-                            <input type="text" name="doi_link" id="doi_link"
-                                placeholder="Enter DOI Link if already exist"
-                                value="{{ old('doi_link', $article->doi_link) }}">
-                        </div>
+                        @if ($article->status == 'production')
+                            <div class="form-group">
+                                <label for="doi_link">DOI Link</label>
+                                <input type="text" name="doi_link" id="doi_link"
+                                    value="{{ old('doi_link', $article->doi_link) }}" disabled>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

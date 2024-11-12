@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backbone;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ArticleBackboneRequest;
+use App\Jobs\SubmitDoiToCrossRef;
 use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\ArticleCommentAttachment;
@@ -13,6 +14,7 @@ use App\Models\ArticleKeyword;
 use App\Models\ArticleReference;
 use App\Models\Edition;
 use App\Notifications\NewCommentNotification;
+use App\Services\CrossRefService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +32,6 @@ class ArticleController extends Controller
         $this->middleware(function ($request, $next) {
             $user = Auth::user();
             $this->articleFor = $user->hasRole(['admin_law', 'editor_law']) ? 'law' : 'economic';
-
             return $next($request);
         });
     }
@@ -231,7 +232,7 @@ class ArticleController extends Controller
      */
     public function update($editionId, Request $request, string $id)
     {
-        // dd($request->all());
+        // @dd($request->all());
         $edition = self::checkEdition($editionId);
         if (empty($edition)) {
             return redirect()->back()->with('message', 'Edition not found');
@@ -244,6 +245,7 @@ class ArticleController extends Controller
         $article = Article::where('id', $id)
             ->where('edition_id', $editionId)
             ->where('article_for', $this->articleFor)
+            ->with(['authors', 'keywords', 'files', 'references', 'edition'])
             ->first();
 
         if (empty($article)) {
@@ -504,5 +506,65 @@ class ArticleController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Error send comment', 'id' => $article->id], 500);
         }
+    }
+
+    public function generateDoi($editionId)
+    {
+        $edition = self::checkEdition($editionId);
+        if (empty($edition)) {
+            return redirect()->back()->with('message', 'Edition not found');
+        }
+
+        $articles = Article::where('edition_id', $edition->id)
+            ->where('article_for', $this->articleFor)
+            ->where('status', 'production')
+            ->where('doi_link', null)
+            ->get();
+
+        return view('Contents.articles.generate-doi')->with(['edition' => $edition, 'articles' => $articles]);
+    }
+
+    public function generateDoiForSelectedArticles($editionId, Request $request)
+    {
+        $edition = self::checkEdition($editionId);
+        if (empty($edition)) {
+            return response()->json(['message' => 'Edition not found'], 404);
+        }
+
+        $request->validate([
+            'articles' => 'required|array',
+            'articles.*' => 'required|exists:articles,id'
+        ]);
+
+        $articles = Article::whereIn('id', $request->articles)
+            ->where('edition_id', $edition->id)
+            ->where('article_for', $this->articleFor)
+            ->where('status', 'production')
+            ->where('doi_link', null)
+            ->get();
+
+        if ($articles->isEmpty()) {
+            return response()->json(['message' => 'No valid articles found'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $frontEndUrl = $this->articleFor == 'law' ? 'https://legisinsightjournal.com' : 'https://oeajournal.com';
+            foreach ($articles as $article) {
+                $doi = '10.70573/kib.' . $article->edition->volume . '.' . $article->edition->issue . '.' . $article->edition->year . '.' . $article->id;
+                Article::where('id', $article->id)->update(['doi_link' => $doi]);
+            }
+
+            $articleIds = array_column($articles->toArray(), 'id');
+            // Dispatch background job to submit DOI to CrossRef
+            dispatch(new SubmitDoiToCrossRef($articleIds, $frontEndUrl));
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error generating DOI: ' . $e->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'DOI generated successfully'], 200);
     }
 }

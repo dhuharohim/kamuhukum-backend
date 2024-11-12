@@ -33,6 +33,8 @@ Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy,editor_economy
     Route::prefix('articles')->name('articles.')->group(function () {
         Route::get('{editionId}', [ArticleController::class, 'index'])->name('index');
         Route::get('{editionId}/create', [ArticleController::class, 'create'])->name('create');
+        Route::get('{editionId}/generate-doi', [ArticleController::class, 'generateDoi'])->name('generateDoi');
+        Route::post('{editionId}/generate-doi-for-selected-articles', [ArticleController::class, 'generateDoiForSelectedArticles'])->name('generateDoiForSelectedArticles');
         Route::post('{editionId}', [ArticleController::class, 'store'])->name('store');
         Route::get('{editionId}/{article}', [ArticleController::class, 'show'])->name('show');
         Route::get('{editionId}/{article}/edit', [ArticleController::class, 'edit'])->name('edit');

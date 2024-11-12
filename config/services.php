@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'crossref' => [
+        'username' => env('CROSSREF_USERNAME'),
+        'password' => env('CROSSREF_PASSWORD'),
+    ],
 ];

@@ -357,19 +357,14 @@ class JournalController extends Controller
                     'contributor_role' => $contributor['role'] ?? 'Author',
                     'given_name' => $contributor['given_name'] ?? null,
                     'family_name' => $contributor['family_name'] ?? null,
-                    'contact' => $contributor['contact'] ?? null,
-                    // 'phone' => $contributorphone,
+                    'email' => $contributor['email'] ?? null,
+                    'phone' => $contributor['phone'] ?? null,
                     'preferred_name' => $contributor['preferred_name'] ?? null,
                     'affilation' => $contributor['affilation'] ?? null,
                     'country' => $contributor['country'] ?? null,
-                    // 'img_url' => $contributorimg_url,
                     'homepage_url' => $contributor['homepage_url'] ?? null,
                     'orcid_id' => $contributor['orcid_id'] ?? null,
-                    // 'mailing_address' => $contributor['mailing_address'],
                     'bio_statement' => $contributor['bio_statement'] ?? null,
-                    // 'reviewing_interest',
-                    'principal_contact' => $contributor['principal_contact'] == true ? 1 : 0,
-                    'in_browse_list' => $contributor['in_browse_list'] == true ? 1 : 0
                 ]);
             }
 
