@@ -70,7 +70,10 @@
                 <tfoot>
                     <tr>
                         <td colspan="3" align="right">
-                            <button class="btn btn-primary" id="generateDoi">Generate DOI for selected articles</button>
+                            <button class="btn btn-primary" id="generateDoi">
+                                <i class="fa fa-spinner fa-spin d-none" id="generateDoiLoader"></i>
+                                Generate DOI for selected articles
+                            </button>
                         </td>
                     </tr>
                 </tfoot>
@@ -129,6 +132,8 @@
         });
 
         function generateDoi(selectedArticles) {
+            $('#generateDoi').prop('disabled', true);
+            $('#generateDoiLoader').removeClass('d-none');
             $.ajax({
                 url: "{{ route('articles.generateDoiForSelectedArticles', $edition->id) }}",
                 method: 'POST',
@@ -155,6 +160,8 @@
                     window.location.reload();
                 }
             });
+            $('#generateDoi').prop('disabled', false);
+            $('#generateDoiLoader').addClass('d-none');
         }
     </script>
 @endsection
