@@ -66,22 +66,18 @@
                             @if ($isAdmin)
                                 <td>
                                     <small>
-                                        @if ($article->editor)
-                                            {{ $article->editor->username }}
-                                        @else
-                                            <span class="text-muted">N/A</span>
-                                        @endif
+
                                     </small>
                                 </td>
                             @endif
                             <td>
-                                <small>
+                                {{-- <small>
                                     @if ($article->assigned_on)
                                         {{ !empty($article->assigned_on) ? date('d M Y h:i:s', strtotime($article->assigned_on)) : '' }}
                                     @else
                                         <span class="text-muted">N/A</span>
                                     @endif
-                                </small>
+                                </small> --}}
                             </td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
@@ -113,13 +109,13 @@
                         <h5 class="modal-title" id="assignEditorModalLabel">Assign Editor</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body nftmax-modal__body modal-body nftmax-close__body">
+                    <div class="modal-body nftmax-modal__body modal-body nftmax-close__body p-4">
                         <!-- Add form for assigning editor here -->
                         <form id="assignEditorForm">
                             <input type="hidden" id="articleId" name="articleId">
                             <div class="mb-3">
-                                <label for="editorSelect" class="form-label">Select Editor</label>
-                                <select class="form-select" id="editorSelect" name="editorId" required>
+                                <label for="editorSelect" class="form-label">Select Editor (Multiple)</label>
+                                <select class="selectize" id="editorSelect" name="editorId[]" multiple required>
                                     <option value="">Select Editor</option>
                                     <!-- Populate this dropdown with available editors -->
                                     @foreach ($editors as $editor)
@@ -164,6 +160,14 @@
                 // Reset form fields
                 $('#editorSelect').val('');
                 $('#notifyEmail').prop('checked', true);
+                // Reset selectize by destroying and reinitializing
+                $('#editorSelect').selectize()[0].selectize.destroy();
+                $('#editorSelect').selectize({
+                    plugins: ['remove_button'],
+                    delimiter: ',',
+                    persist: false,
+                    create: false
+                });
             });
 
             // Handle the "Save changes" button click

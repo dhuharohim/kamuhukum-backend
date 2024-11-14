@@ -90,8 +90,8 @@ class Article extends Model
         return $this->hasMany(ArticleComment::class, 'article_id', 'id');
     }
 
-    public function editor()
+    public function editors(): HasMany
     {
-        return $this->belongsTo(User::class, 'editor_id', 'id');
+        return $this->hasMany(ArticleEditor::class, 'article_id', 'id');
     }
 }

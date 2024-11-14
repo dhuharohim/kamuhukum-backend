@@ -43,10 +43,12 @@ class SubmissionController extends Controller
         $query = Article::query()
             ->where('article_for', $this->submissionFor)
             ->whereIn('status', ['submission', 'incomplete', 'review'])
-            ->with(['edition', 'editor']);
+            ->with(['edition', 'editors.user']);
 
         if (!$this->isAdmin) {
-            $query->where('editor_id', Auth::id());
+            $query->whereHas('editors', function ($q) {
+                $q->where('user_id', Auth::id());
+            });
         }
 
         $editors = [];
@@ -90,7 +92,7 @@ class SubmissionController extends Controller
             return redirect()->back()->with('message', 'Article not found');
         }
 
-        if (!$this->isAdmin && $article->editor_id !== Auth::id()) {
+        if (!$this->isAdmin && !$article->editors()->where('user_id', Auth::id())->exists()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -120,7 +122,7 @@ class SubmissionController extends Controller
             return redirect()->back()->with('message', 'Article not found');
         }
 
-        if (!$this->isAdmin && $article->editor_id !== Auth::id()) {
+        if (!$this->isAdmin && !$article->editors()->where('user_id', Auth::id())->exists()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -285,26 +287,32 @@ class SubmissionController extends Controller
 
         $request->validate([
             'articleId' => 'required|exists:articles,id',
-            'editorId' => 'required|exists:users,id',
+            'editorId' => 'required|array',
+            'editorId.*' => 'required|exists:users,id',
             'notifyEmail' => 'required|string|in:true,false'
         ]);
 
         $article = Article::with('authors')->findOrFail($request->articleId);
-        $editor = User::findOrFail($request->editorId);
+        $editors = User::whereIn('id', $request->editorId)->get();
 
-        // Check if the editor has the correct role
-        if (!$editor->hasRole('editor_' . $this->submissionFor)) {
-            return response()->json(['error' => 'Selected user is not an editor for this submission type.'], 422);
+        // Check if all editors have the correct role
+        foreach ($editors as $editor) {
+            if (!$editor->hasRole('editor_' . $this->submissionFor)) {
+                return response()->json(['error' => 'One or more selected users are not editors for this submission type.'], 422);
+            }
         }
 
         DB::beginTransaction();
         try {
-            $article->editor_id = $editor->id;
-            $article->assigned_on = now();
-            $article->save();
+            // Create article editor record
+            foreach ($editors as $editor) {
+                $article->editors()->create([
+                    'user_id' => $editor->id
+                ]);
 
-            if ($request->input('notifyEmail') === 'true') {
-                $editor->notify(new EditorAssignedNotification($article, $editor));
+                if ($request->input('notifyEmail') === 'true') {
+                    $editor->notify(new EditorAssignedNotification($article, $editor));
+                }
             }
 
             DB::commit();
