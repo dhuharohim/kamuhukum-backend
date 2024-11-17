@@ -20,8 +20,12 @@
             <div class="col-12">
                 <div class="alert alert-info" role="alert">
                     <i class="fas fa-info-circle me-2"></i>
-                    Note: Only articles with "Production" status and published dates and without DOI links are displayed
-                    here.
+                    Only articles with "Production" status here.
+                </div>
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    If article already have DOI, you can generate again to replace current DOI Link and the previous
+                    will deactive automaticly.
                 </div>
             </div>
         </div>
@@ -31,19 +35,20 @@
                     <tr>
                         <th class="">Name Article</th>
                         <th class="">Published</th>
-                        <th>
-                            <div class="form-check">
+                        <th>Custom DOI Suffix</th>
+                        <th align="right">
+                            <div class="form-check mb-0 ">
                                 <input class="form-check-input" type="checkbox" id="selectAll">
-                                <label class="form-check-label text-white" for="selectAll">Select All</label>
+                                <label class="form-check-label mb-0 text-white" for="selectAll">Select All</label>
                             </div>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($articles as $article)
+                    @forelse ($articles as $article)
                         <tr>
                             <td width="30%">
-                                <p class="mb-0 text-truncate" style="max-width: 600px;">
+                                <p class="mb-0 text-truncate" style="max-width: 400px;">
                                     {{ \Illuminate\Support\Str::title($article->title) }}</p>
                                 <ul>
                                     @foreach ($article->authors as $author)
@@ -59,18 +64,32 @@
                                 {{ !empty($article->published_date) ? date('d M Y', strtotime($article->published_date)) : '' }}
                             </td>
                             <td>
+                                <div class="input-group">
+                                    <div class="input-group-prepend border-end-0">
+                                        <span class="input-group-text">10.70573/</span>
+                                    </div>
+                                    <input type="text" name="suffix[]" id="suffix" class="form-control border-start-0"
+                                        value="{{ explode('/', $article->doi_link)[1] ?? '' }}">
+                                </div>
+                            </td>
+                            <td>
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="selected_articles[]"
                                         value="{{ $article->id }}">
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="4" align="center">No Article data.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="3" align="right">
-                            <button class="btn btn-primary" id="generateDoi">
+                        <td colspan="4" align="right">
+                            <button class="btn btn-primary" id="generateDoi"
+                                @if ($articles->isEmpty()) disabled @endif>
                                 <i class="fa fa-spinner fa-spin d-none" id="generateDoiLoader"></i>
                                 Generate DOI for selected articles
                             </button>
@@ -91,13 +110,25 @@
 
             $('#generateDoi').on('click', function() {
                 const selectedArticles = $('input[name="selected_articles[]"]:checked').map(function() {
-                    return $(this).val();
+                    return {
+                        id: $(this).val(),
+                        suffix: $(this).closest('tr').find('input[name="suffix[]"]').val()
+                    };
                 }).get();
 
                 if (selectedArticles.length === 0) {
                     iziToast.info({
                         title: 'Info',
                         message: 'No articles selected, please select at least one article',
+                    });
+                    return;
+                }
+
+                const suffixes = selectedArticles.map(article => article.suffix);
+                if (suffixes.some(suffix => suffix === '')) {
+                    iziToast.error({
+                        title: 'Error',
+                        message: 'Suffix cannot be empty',
                     });
                     return;
                 }

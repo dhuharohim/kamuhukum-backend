@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\EditorAssignedMail;
 use App\Models\Article;
 use App\Models\ArticleContributors;
+use App\Models\ArticleEditor;
 use App\Models\ArticleFile;
 use App\Models\ArticleKeyword;
 use App\Models\ArticleReference;
@@ -43,7 +44,7 @@ class SubmissionController extends Controller
         $query = Article::query()
             ->where('article_for', $this->submissionFor)
             ->whereIn('status', ['submission', 'incomplete', 'review'])
-            ->with(['edition', 'editors.user']);
+            ->with(['edition']);
 
         if (!$this->isAdmin) {
             $query->whereHas('editors', function ($q) {
@@ -51,16 +52,26 @@ class SubmissionController extends Controller
             });
         }
 
-        $editors = [];
-        if ($this->isAdmin) {
-            $editors = User::whereHas('roles', function ($query) {
-                $query->where('name', 'editor_' . $this->submissionFor);
-            })->get();
-        }
-
         $articles = $query->get();
+        return view('Contents.submission.list', ['articles' => $articles, 'isAdmin' => $this->isAdmin]);
+    }
 
-        return view('Contents.submission.list', ['articles' => $articles, 'isAdmin' => $this->isAdmin, 'editors' => $editors]);
+    public function getEditorAvail($articleId)
+    {
+        $articleEditorUserIds = Article::where('id', $articleId)
+            ->with('editors:id') // Only fetch the necessary `user_id` field
+            ->first() // Retrieve a single article
+            ?->editors // Access the editors relationship
+            ->pluck('id') // Extract the user IDs
+            ->toArray(); // Convert to an array
+
+        $editors = User::whereNotIn('id', $articleEditorUserIds)
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'editor_' . $this->submissionFor);
+            })
+            ->get(['id', 'username', 'email']); // Fetch only the necessary fields
+
+        return response()->json($editors, 200);
     }
 
     /**
@@ -327,5 +338,32 @@ class SubmissionController extends Controller
         }
 
         return response()->json(['message' => $message]);
+    }
+
+    public function getEditors($articleId)
+    {
+        $article = Article::with('editors')->findOrFail($articleId);
+        return response()->json(['editors' => $article->editors]);
+    }
+
+    public function removeEditor($editorId)
+    {
+        $articleEditor = ArticleEditor::where('id', $editorId)
+            ->where('article_id', request('article_id'))
+            ->firstOrFail();
+        if (!$articleEditor) {
+            return response()->json(['error' => 'Editor not found'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $articleEditor->delete();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to remove editor: ' . $e->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'Editor removed successfully.']);
     }
 }

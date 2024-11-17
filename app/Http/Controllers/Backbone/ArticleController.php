@@ -27,6 +27,7 @@ use Illuminate\Support\Str;
 class ArticleController extends Controller
 {
     private $articleFor;
+    const DOIREF = '10.70573/';
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
@@ -510,6 +511,10 @@ class ArticleController extends Controller
 
     public function generateDoi($editionId)
     {
+        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+            return redirect()->back()->with('message', 'Unauthorized');
+        }
+
         $edition = self::checkEdition($editionId);
         if (empty($edition)) {
             return redirect()->back()->with('message', 'Edition not found');
@@ -518,7 +523,6 @@ class ArticleController extends Controller
         $articles = Article::where('edition_id', $edition->id)
             ->where('article_for', $this->articleFor)
             ->where('status', 'production')
-            ->where('doi_link', null)
             ->get();
 
         return view('Contents.articles.generate-doi')->with(['edition' => $edition, 'articles' => $articles]);
@@ -533,32 +537,23 @@ class ArticleController extends Controller
 
         $request->validate([
             'articles' => 'required|array',
-            'articles.*' => 'required|exists:articles,id'
+            'articles.*' => 'required|array',
+            'articles.*.id' => 'required|integer|exists:articles,id',
+            'articles.*.suffix' => 'required|string',
         ]);
 
-        $articles = Article::whereIn('id', $request->articles)
-            ->where('edition_id', $edition->id)
-            ->where('article_for', $this->articleFor)
-            ->where('status', 'production')
-            ->where('doi_link', null)
-            ->get();
-
-        if ($articles->isEmpty()) {
-            return response()->json(['message' => 'No valid articles found'], 404);
-        }
-
+        $articlesRequest = $request->articles;
         DB::beginTransaction();
         try {
             $frontEndUrl = $this->articleFor == 'law' ? 'https://legisinsightjournal.com' : 'https://oeajournal.com';
-            foreach ($articles as $article) {
-                $doi = '10.70573/kib.' . $article->edition->volume . '.' . $article->edition->issue . '.' . $article->edition->year . '.' . $article->id;
-                Article::where('id', $article->id)->update(['doi_link' => $doi]);
+            foreach ($articlesRequest as $article) {
+                $doi = self::DOIREF . $article['suffix'];
+                Article::where('id', $article['id'])->update(['doi_link' => $doi]);
             }
 
-            $articleIds = array_column($articles->toArray(), 'id');
+            // $articleIds = array_column($articlesRequest, 'id');
             // Dispatch background job to submit DOI to CrossRef
-            dispatch(new SubmitDoiToCrossRef($articleIds, $frontEndUrl));
-
+            dispatch(new SubmitDoiToCrossRef($articlesRequest, $frontEndUrl));
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

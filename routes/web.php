@@ -46,6 +46,9 @@ Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy,editor_economy
     // submissions
     Route::resource('submissions', SubmissionController::class);
     Route::post('assign-editor', [SubmissionController::class, 'assignEditor'])->name('submissions.assignEditor');
+    Route::get('get-editors/{articleId}', [SubmissionController::class, 'getEditors'])->name('submissions.getEditors');
+    Route::post('remove-editor/{editorId}', [SubmissionController::class, 'removeEditor'])->name('submissions.removeEditor');
+    Route::get('get-editors-avail/{articleId}', [SubmissionController::class, 'getEditorAvail'])->name('submissions.getEditorsAvail');
 });
 
 Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy'])->group(function () {

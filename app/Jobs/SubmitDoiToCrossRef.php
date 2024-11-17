@@ -16,15 +16,15 @@ class SubmitDoiToCrossRef implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $articleIds;
+    protected $articles;
     protected $frontEndUrl;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(array $articleIds, string $frontEndUrl)
+    public function __construct(array $articles, string $frontEndUrl)
     {
-        $this->articleIds = $articleIds;
+        $this->articles = $articles;
         $this->frontEndUrl = $frontEndUrl;
     }
 
@@ -34,9 +34,13 @@ class SubmitDoiToCrossRef implements ShouldQueue
     public function handle(): void
     {
         $crossRefService = new CrossRefService();
-        $articles = Article::whereIn('id', $this->articleIds)
+        $articles = Article::whereIn('id', array_column($this->articles, 'id'))
             ->with(['authors', 'edition'])
-            ->get();
+            ->get()
+            ->map(function ($article) {
+                $article->doi_request = collect($this->articles)->firstWhere('id', $article->id)['suffix'] ?? null;
+                return $article;
+            });
 
         if ($articles->isEmpty()) {
             $this->fail(new \Exception('No articles found'));
@@ -49,6 +53,7 @@ class SubmitDoiToCrossRef implements ShouldQueue
                     'article_id' => $article->id,
                     'result' => $test
                 ]);
+
                 activity()
                     ->withProperties([
                         'result' => $test

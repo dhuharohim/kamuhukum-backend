@@ -114,7 +114,7 @@ class CrossRefService
 
         // DOI data
         $doiData = $journalArticle->addChild('doi_data');
-        $doiData->addChild('doi', '10.70573/kib.' . $article->edition->volume . '.' . $article->edition->issue . '.' . $article->edition->year . '.' . $article->id); // Using article slug instead of ID for DOI
+        $doiData->addChild('doi', '10.70573/' . $article->doi_request);
         $articleLink = $frontEndUrl . '/archives/view/' . $article->edition->slug . '/article/' . $article->slug;
         $doiData->addChild('resource', $articleLink);
 

@@ -40,15 +40,24 @@
                             <td width="30%">
                                 <p class="mb-0 text-truncate" style="max-width: 600px;">
                                     {{ \Illuminate\Support\Str::title($article->title) }}</p>
-                                <ul>
-                                    @foreach ($article->authors as $author)
-                                        <li style="font-size: 12px;">
-                                            <span class="badge bg-secondary">{{ ucwords($author->contributor_role) }}</span>
-                                            {{ $author->given_name }} {{ $author->family_name }}
-                                            - {{ $author->affilation }}
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                <div class="d-flex justify-content-between">
+                                    <ul>
+                                        @foreach ($article->authors as $author)
+                                            <li style="font-size: 12px;">
+                                                <span
+                                                    class="badge bg-secondary">{{ ucwords($author->contributor_role) }}</span>
+                                                {{ $author->given_name }} {{ $author->family_name }}
+                                                - {{ $author->affilation }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                    @if ($article->status == 'production' && !empty($article->doi_link))
+                                        <a href="{{ $article->doi_link_formatted }}" target="_blank"
+                                            class="badge bg-success text-sm mb-0 align-content-center"><i
+                                                class="fa fa-link"></i>
+                                            {{ $article->doi_link }}</a>
+                                    @endif
+                                </div>
                             </td>
                             <td>
                                 @php
@@ -77,40 +86,21 @@
                             </td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a href="{{ route('submissions.show', ['submission' => $article->id]) }}"
-                                        class="btn btn-outline-dark btn-sm"><i class="fa fa-eye"></i></a>
+                                    @if (
+                                        $article->editors()->where('user_id', Auth::id())->exists() ||
+                                            auth()->user()->hasRole(['admin_law', 'admin_economy']))
+                                        <a href="{{ route('submissions.show', ['submission' => $article->id]) }}"
+                                            class="btn btn-outline-dark btn-sm"><i class="fa fa-eye"></i></a>
+                                    @endif
                                     @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
                                         <a onclick="confirmDelete('{{ $edition->id }}', '{{ $article->id }}')"
                                             class="btn btn-outline-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                    @endif
-                                    @if ($article->status == 'production' && !empty($article->doi_link))
-                                        <a href="{{ $article->doi_link_formatted }}" target="_blank"
-                                            class="btn btn-outline-success btn-sm"><i class="fa fa-link"></i></a>
                                     @endif
                                 </div>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="4" class="bg-primary text-white">
-                            <div class="d-flex justify-content-start gap-2">
-                                <span class="badge bg-dark">
-                                    <i class="fa fa-eye"></i> View article details
-                                </span>
-                                @if (auth()->user()->hasRole(['admin_law', 'admin_economy']))
-                                    <span class="badge bg-danger">
-                                        <i class="fa fa-trash"></i> Delete article
-                                    </span>
-                                @endif
-                                <span class="badge bg-success">
-                                    <i class="fa fa-link"></i> DOI link (for published articles)
-                                </span>
-                            </div>
-                        </td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
