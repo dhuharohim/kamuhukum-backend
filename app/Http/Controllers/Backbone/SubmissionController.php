@@ -315,13 +315,23 @@ class SubmissionController extends Controller
 
         DB::beginTransaction();
         try {
-            // Create article editor record
-            foreach ($editors as $editor) {
-                $article->editors()->create([
-                    'user_id' => $editor->id
-                ]);
+            $articleId = $request->input('articleId');
+            $data = [];
 
-                if ($request->input('notifyEmail') === 'true') {
+            foreach ($editors as $editor) {
+                $data[] = [
+                    'article_id' => $articleId,
+                    'user_id' => $editor->id,
+                    'assigned_on' => date('Y-m-d H:i:s'),
+                ];
+            }
+
+            // Batch insert
+            ArticleEditor::insert($data);
+
+            // Notify editors if required
+            if ($request->input('notifyEmail') === 'true') {
+                foreach ($editors as $editor) {
                     $editor->notify(new EditorAssignedNotification($article, $editor));
                 }
             }
@@ -348,9 +358,10 @@ class SubmissionController extends Controller
 
     public function removeEditor($editorId)
     {
-        $articleEditor = ArticleEditor::where('id', $editorId)
+        $articleEditor = ArticleEditor::where('user_id', $editorId)
             ->where('article_id', request('article_id'))
-            ->firstOrFail();
+            ->first();
+
         if (!$articleEditor) {
             return response()->json(['error' => 'Editor not found'], 404);
         }

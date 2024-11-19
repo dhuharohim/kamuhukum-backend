@@ -9,7 +9,7 @@ class ArticleEditor extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['article_id', 'user_id'];
+    protected $fillable = ['article_id', 'user_id', 'assigned_on'];
 
     public function article()
     {

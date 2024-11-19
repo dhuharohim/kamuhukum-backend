@@ -185,6 +185,10 @@
         $(function() {
             $('.seeEditorsButton').on('click', function(event) {
                 event.preventDefault();
+                $(this).prop('disabled', true);
+                $(this).html(
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+                );
                 const articleId = $(this).data('article-id');
                 $.ajax({
                     url: '{{ route('submissions.getEditors', ['articleId' => ':articleId']) }}'
@@ -193,7 +197,8 @@
                     success: function(response) {
                         $('#seeEditorsModal').modal('show');
                         $('.spinner-border').addClass('d-none');
-
+                        $('.seeEditorsButton').prop('disabled', false);
+                        $('.seeEditorsButton').html('See Editors');
                         setTimeout(() => {
                             if (response.editors.length === 0) {
                                 $('#seeEditorsTable tbody').html(
@@ -231,6 +236,7 @@
 
                 // Open the modal first
                 $('#assignEditorModal').modal('show');
+                $('#articleId').val(articleId);
 
                 // Initialize Selectize with a loading placeholder
                 setTimeout(() => {
@@ -238,14 +244,12 @@
                     if (selectize) {
                         selectize.destroy();
                     }
+
                     selectize = $('#editorSelect').selectize({
                         create: true,
                         sortField: 'text',
-                        placeholder: 'Select Editors',
+                        placeholder: 'Loading editors',
                     })[0].selectize;
-
-                    // Clear existing options
-                    selectize.clearOptions();
 
                     // Fetch options via AJAX
                     $.ajax({
@@ -263,6 +267,9 @@
                                     text: editor.username
                                 });
                             });
+
+                            selectize.settings.placeholder = 'Select editors';
+                            selectize.updatePlaceholder();
                             selectize.refreshOptions();
                         },
                         error: function(xhr) {
@@ -327,25 +334,6 @@
                             }, toast, 'button');
                         }],
                     ]
-                });
-            });
-
-            // Handle the "Assign Editor" modal
-            $('#assignEditorModal').on('show.bs.modal', function(event) {
-                const button = $(event.relatedTarget);
-                const articleId = button.data('article-id');
-                $('#articleId').val(articleId);
-
-                // Reset form fields
-                $('#editorSelect').val('');
-                $('#notifyEmail').prop('checked', true);
-                // Reset selectize by destroying and reinitializing
-                $('#editorSelect').selectize()[0].selectize.destroy();
-                $('#editorSelect').selectize({
-                    plugins: ['remove_button'],
-                    delimiter: ',',
-                    persist: false,
-                    create: false
                 });
             });
 
