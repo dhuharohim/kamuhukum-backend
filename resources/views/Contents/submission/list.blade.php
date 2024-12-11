@@ -5,6 +5,7 @@
 @endsection
 
 @section('page_content')
+    {{-- Submission List --}}
     <div class="nftmax-table welcome-cta mg-top-40 d-block">
         <h4>Submission List</h4>
         <div class="table-responsive">
