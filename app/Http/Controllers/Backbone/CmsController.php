@@ -220,7 +220,7 @@ class CmsController extends Controller
             return response()->json([
                 'url' => config('app.url') . 'admin/storage/' . $filename,
                 'success' => true,
-                'test' => 'ok'
+                'test' => Storage::url($path)
             ]);
         } catch (Exception $e) {
             return response()->json([
