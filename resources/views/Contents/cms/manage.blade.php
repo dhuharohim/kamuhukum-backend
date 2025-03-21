@@ -199,47 +199,48 @@
                 <div class="preview-container" id="previewContainer">
                     <div id="previewImage" class="d-flex justify-content-center align-items-center"
                         style="height: 245px; background-size: cover; background-position: center; background-repeat: no-repeat;
-                        {{ isset($section) && $section->preview ? 'background-image: url(' . asset(Storage::url($section->preview)) . ');' : '' }}">
+                        @style('background-image: url(' . (isset($section) && $section->preview ? $section->signed_preview_image : '') . ');')
 
-                        <div class="text-center {{ isset($section) && $section->preview ? 'd-none' : '' }}">
-                            <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
-                            <p class="mt-2 text-muted">Click or drag image to upload</p>
-                        </div>
+                        <div class="text-center
+                        {{ isset($section) && $section->preview ? 'd-none' : '' }}">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                        <p class="mt-2 text-muted">Click or drag image to upload</p>
                     </div>
-                    <div class="preview-overlay">
-                        <span><i class="fas fa-edit"></i> Change Image</span>
-                    </div>
-                    <input type="file" name="preview" id="preview" class="d-none" accept="image/*">
                 </div>
-                <small class="text-muted mt-2 d-block">Recommended size: 1200x630px. Max file size: 2MB</small>
+                <div class="preview-overlay">
+                    <span><i class="fas fa-edit"></i> Change Image</span>
+                </div>
+                <input type="file" name="preview" id="preview" class="d-none" accept="image/*">
             </div>
+            <small class="text-muted mt-2 d-block">Recommended size: 1200x630px. Max file size: 2MB</small>
+    </div>
 
-            <div class="section-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h5 class="card-title mb-1">Sub Sections</h5>
-                        <p class="text-muted mb-0">Add multiple content blocks to this section</p>
-                    </div>
-                    <button type="button" class="btn btn-primary" id="addSubSection">
-                        <i class="fas fa-plus"></i> Add Sub Section
-                    </button>
-                </div>
-
-                <div id="subSections">
-                    <!-- Sub sections will be dynamically added here -->
-                </div>
+    <div class="section-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="card-title mb-1">Sub Sections</h5>
+                <p class="text-muted mb-0">Add multiple content blocks to this section</p>
             </div>
+            <button type="button" class="btn btn-primary" id="addSubSection">
+                <i class="fas fa-plus"></i> Add Sub Section
+            </button>
+        </div>
 
-            <div class="section-card mt-3">
-                <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        {{ isset($section) ? 'Update Content' : 'Save Content' }}
-                    </button>
-                </div>
-            </div>
-        </form>
+        <div id="subSections">
+            <!-- Sub sections will be dynamically added here -->
+        </div>
+    </div>
+
+    <div class="section-card mt-3">
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {{ isset($section) ? 'Update Content' : 'Save Content' }}
+            </button>
+        </div>
+    </div>
+    </form>
     </div>
 @endsection
 
@@ -370,10 +371,10 @@
                                     placeholder="Enter key (e.g., hero_title, about_text)"
                                     value="${data?.key || ''}" required>
                                 ${index > 0 ? `
-                                                        <button type="button" class="btn btn-outline-danger" onclick="removeSubSection(${index})">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    ` : ''}
+                                                            <button type="button" class="btn btn-outline-danger" onclick="removeSubSection(${index})">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        ` : ''}
                             </div>
                         </div>
                     </div>
