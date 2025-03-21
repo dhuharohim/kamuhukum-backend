@@ -27,12 +27,12 @@ class CmsController extends Controller
     public function index()
     {
         $sections = Section::where('section_for', $this->userFor)->with('contents')->orderBy('position', 'asc')->get();
-        return view('contents.cms.index', compact('sections'));
+        return view('Contents.cms.index', compact('sections'));
     }
 
     public function create()
     {
-        return view('contents.cms.manage');
+        return view('Contents.cms.manage');
     }
 
     public function show($slug)
@@ -42,7 +42,7 @@ class CmsController extends Controller
             return redirect()->route('cms.index')->with('error', 'Section not found');
         }
 
-        return view('contents.cms.manage', compact('section'));
+        return view('Contents.cms.manage', compact('section'));
     }
 
     public function store(Request $request)
