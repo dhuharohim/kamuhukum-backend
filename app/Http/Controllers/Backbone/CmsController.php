@@ -211,7 +211,7 @@ class CmsController extends Controller
 
             $file = $request->file('image');
             $filename = 'editor-' . time() . '-' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-            $path = '/storage/' . $file->storeAs('uploads/cms/editor/' . $this->userFor, $filename, 'public');
+            $path = $file->storeAs('uploads/cms/editor/' . $this->userFor, $filename, 'public');
 
             if (!$path) {
                 throw new Exception('Failed to store image');
@@ -219,7 +219,8 @@ class CmsController extends Controller
 
             return response()->json([
                 'url' => config('app.url') . $path,
-                'success' => true
+                'success' => true,
+                'test' => 'ok'
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -244,7 +245,7 @@ class CmsController extends Controller
         if (isset($matches[1])) {
             foreach ($matches[1] as $src) {
                 // Convert URL to storage path by removing the app URL and /storage prefix
-                $path = str_replace(config('app.url') . '/storage/', '', $src);
+                $path = str_replace(config('app.url'), '', $src);
                 if (Storage::exists('public/' . $path)) {
                     $usedImages[] = 'public/' . $path;
                 }
