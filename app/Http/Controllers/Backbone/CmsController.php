@@ -220,7 +220,7 @@ class CmsController extends Controller
             return response()->json([
                 'url' => str_replace('//', '/', str_replace('storage', 'admin/storage', Storage::url($path))),
                 'success' => true,
-                'test' => str_replace('//', '/', str_replace('storage', 'admin/storage', Storage::url($path)))
+                'test' => $path
             ]);
         } catch (Exception $e) {
             return response()->json([
