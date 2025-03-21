@@ -79,7 +79,7 @@ class CrossRefService
 
         // Titles
         $titles = $journalArticle->addChild('titles');
-        if ($article->prefix) {
+        if ($article->prefix !== null && $article->prefix !== 'null') {
             $titles->addChild('title', htmlspecialchars($article->prefix . ' ' . $article->title));
         } else {
             $titles->addChild('title', htmlspecialchars($article->title));
@@ -98,8 +98,8 @@ class CrossRefService
                 $person->addAttribute('contributor_role', 'author');
                 $person->addChild('given_name', htmlspecialchars($author->given_name));
                 $person->addChild('surname', htmlspecialchars($author->family_name));
-                if ($author->orcid_id) {
-                    $orcid = $person->addChild('ORCID', $author->orcid_id);
+                if ($author->orcid_id && $author->orcid_id !== 'undefined') {
+                    $person->addChild('ORCID', $author->orcid_id);
                 }
             }
         }

@@ -29,8 +29,8 @@ class DatabaseSeeder extends Seeder
             // ArticleKeywordsTableSeeder::class,
             // ArticleReferencesTableSeeder::class,
             // ArticleFilesTableSeeder::class,
-            BackboneUserSeeder::class
-
+            // BackboneUserSeeder::class
+            SectionSeeder::class,
             // UserAnnouncementTableSeeder::class,
         ]);
     }

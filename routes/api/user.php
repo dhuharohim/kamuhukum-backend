@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\User\Announcements\AnnouncementsController;
 use App\Http\Controllers\Api\User\AuthController;
 use App\Http\Controllers\Api\User\Category\CategoryController;
+use App\Http\Controllers\Api\User\ContentController;
 use App\Http\Controllers\Api\User\Journal\JournalController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,7 @@ Route::prefix('announcements')->group(function () {
 });
 
 Route::get('home/{from}', [JournalController::class, 'getHomeData']);
+Route::get('content/{from}/{slug}', [ContentController::class, 'getContentSection']);
 
 Route::middleware(['auth:sanctum', 'check:author_law,author_economy'])->group(function () {
     Route::prefix('user')->group(function () {

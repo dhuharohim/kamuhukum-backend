@@ -7,6 +7,7 @@ use App\Http\Controllers\Backbone\DashboardController;
 use App\Http\Controllers\Backbone\EditionController;
 use App\Http\Controllers\Backbone\SubmissionController;
 use App\Http\Controllers\Backbone\UserAccessController;
+use App\Http\Controllers\Backbone\CmsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -57,6 +58,10 @@ Route::middleware(['auth:sanctum', 'check:admin_law,admin_economy'])->group(func
 
     // user access management
     Route::resource('users-access', UserAccessController::class);
+
+    // content management system
+    Route::post('cms/upload-image', [CmsController::class, 'uploadImage'])->name('cms.upload-image');
+    Route::resource('cms', CmsController::class);
 });
 
 // Authorization for backend

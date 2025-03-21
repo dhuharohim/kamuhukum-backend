@@ -12,6 +12,7 @@ use App\Models\ArticleContributors;
 use App\Models\ArticleFile;
 use App\Models\ArticleKeyword;
 use App\Models\Edition;
+use App\Models\Section;
 use App\Models\User;
 use App\Notifications\NewCommentNotification;
 use Carbon\Carbon;
@@ -24,10 +25,12 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Traits\CmsHelper;
 
 
 class JournalController extends Controller
 {
+    use CmsHelper;
     public function currentPage($from, $cred = null)
     {
         $currentEdition = Edition::where('edition_for', $from)
@@ -569,6 +572,8 @@ class JournalController extends Controller
             ->take(4)
             ->get();
 
-        return response()->json(['current' => $currentEdition, 'announcements' => $announcements]);
+        $cms = $this->getCmsSection($from, 'beranda');
+
+        return response()->json(['current' => $currentEdition, 'announcements' => $announcements, 'cms' => $cms]);
     }
 }
