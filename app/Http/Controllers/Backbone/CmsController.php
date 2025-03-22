@@ -19,7 +19,7 @@ class CmsController extends Controller
     {
         $this->middleware(function ($request, $next) {
             $user = Auth::user();
-            $this->userFor = $user->hasRole(['admin_law']) ? 'law' : 'economy';
+            $this->userFor = $user->hasRole(['admin_law']) ? 'law' : 'economic';
             return $next($request);
         });
     }
