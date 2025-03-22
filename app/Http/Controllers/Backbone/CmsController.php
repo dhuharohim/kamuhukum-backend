@@ -202,7 +202,7 @@ class CmsController extends Controller
     {
         try {
             $request->validate([
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048' // 2MB max
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif' // 2MB max
             ]);
 
             if (!$request->hasFile('image')) {
