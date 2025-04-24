@@ -3,34 +3,80 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FacebookWebhookController extends Controller
 {
-    public function callback(Request $request)
+    /**
+     * Handle the verification request from Facebook.
+     * This is called when you first set up the webhook.
+     */
+    public function verify(Request $request)
     {
-        // Verify the request is from Meta
-        $challenge = $request->input('hub_challenge');
-        if ($challenge) {
-            return response()->json(['hub.challenge' => $challenge]);
+        $mode = $request->query('hub_mode');
+        $token = $request->query('hub_verify_token');
+        $challenge = $request->query('hub_challenge');
+
+        // Your verification token should be stored in .env
+        $verify_token = env('FACEBOOK_WEBHOOK_VERIFY_TOKEN');
+
+        // Check if mode and token are correct
+        if ($mode === 'subscribe' && $token === $verify_token) {
+            Log::info('Facebook webhook verified successfully');
+            return response($challenge, 200);
         }
 
-        // Validate JSON payload from Meta
-        $payload = json_decode($request->getContent(), true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return response()->json(['error' => 'Invalid JSON payload'], 400);
+        // Return 403 Forbidden if verification fails
+        Log::error('Facebook webhook verification failed', [
+            'mode' => $mode,
+            'token' => $token,
+            'verify_token' => $verify_token
+        ]);
+        return response('Verification failed', 403);
+    }
+
+    /**
+     * Handle webhook events from Facebook.
+     * This processes actual updates from Instagram/Facebook.
+     */
+    public function handle(Request $request)
+    {
+        $payload = $request->all();
+
+        // Log the incoming webhook for debugging
+        Log::info('Facebook webhook received', ['payload' => $payload]);
+
+        // Process different types of updates
+        if (isset($payload['entry'])) {
+            foreach ($payload['entry'] as $entry) {
+                // Handle Instagram mentions
+                if (isset($entry['changes'])) {
+                    $this->processInstagramUpdates($entry);
+                }
+
+                // Handle other types of updates
+                // Add more handlers as needed based on your webhook subscription
+            }
         }
 
-        // Process the payload
-        // This is a placeholder for actual payload processing logic
-        // For example, you might want to handle different types of events
-        // such as messages, deliveries, or read receipts
-        // This is a very basic example and should be expanded upon
-        // to handle different scenarios and error cases
-        // Assuming the token is used for testing automation
-        if ($payload['object'] === 'page' && $payload['entry'][0]['messaging'][0]['text'] === 'facebook_webhook_testing_automation') {
-            return response()->json(['message' => 'Automation test successful'], 200);
-        } else {
-            return response()->json(['error' => 'Invalid or unauthorized request'], 403);
+        // Always return a 200 OK to acknowledge receipt
+        return response('EVENT_RECEIVED', 200);
+    }
+
+    /**
+     * Process Instagram-specific updates.
+     */
+    private function processInstagramUpdates($entry)
+    {
+        // Add your business logic here
+        // e.g., handle comments, mentions, etc.
+
+        Log::info('Processing Instagram update', ['entry' => $entry]);
+
+        // Example: If you're monitoring comments
+        if (isset($entry['changes'][0]['field']) && $entry['changes'][0]['field'] === 'comments') {
+            $comment = $entry['changes'][0]['value'];
+            // Process the comment
         }
     }
 }

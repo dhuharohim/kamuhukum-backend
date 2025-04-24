@@ -74,6 +74,7 @@ Route::prefix('auth-backbone')->name('auth-backbone.')->controller(AuthBackboneC
     Route::post('logout', 'logout')->name('logout');
 });
 
-Route::prefix('facebook-webhook')->name('facebook-webhook.')->group(function () {
-    Route::post('callback', [FacebookWebhookController::class, 'callback'])->name('callback');
+Route::prefix('webhook')->name('webhook.')->group(function () {
+    Route::get('facebook', [FacebookWebhookController::class, 'verify']);
+    Route::post('facebook', [FacebookWebhookController::class, 'handle']);
 });
