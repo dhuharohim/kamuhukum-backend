@@ -26,6 +26,11 @@ class FacebookWebhookController extends Controller
         // such as messages, deliveries, or read receipts
         // This is a very basic example and should be expanded upon
         // to handle different scenarios and error cases
-        return response()->json(['message' => 'Payload processed successfully'], 200);
+        // Assuming the token is used for testing automation
+        if ($payload['object'] === 'page' && $payload['entry'][0]['messaging'][0]['text'] === 'facebook_webhook_testing_automation') {
+            return response()->json(['message' => 'Automation test successful'], 200);
+        } else {
+            return response()->json(['error' => 'Invalid or unauthorized request'], 403);
+        }
     }
 }
