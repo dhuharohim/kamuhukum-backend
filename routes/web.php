@@ -8,6 +8,7 @@ use App\Http\Controllers\Backbone\EditionController;
 use App\Http\Controllers\Backbone\SubmissionController;
 use App\Http\Controllers\Backbone\UserAccessController;
 use App\Http\Controllers\Backbone\CmsController;
+use App\Http\Controllers\FacebookWebhookController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -71,4 +72,8 @@ Route::prefix('auth-backbone')->name('auth-backbone.')->controller(AuthBackboneC
     Route::get('login', 'loginPage')->name('login');
     Route::post('submitLogin', 'submitLogin')->name('submitLogin');
     Route::post('logout', 'logout')->name('logout');
+});
+
+Route::prefix('facebook-webhook')->name('facebook-webhook.')->group(function () {
+    Route::post('callback', [FacebookWebhookController::class, 'callback'])->name('callback');
 });
