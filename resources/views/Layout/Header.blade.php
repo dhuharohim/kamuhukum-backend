@@ -13,16 +13,16 @@
     <title>KIB Journal - @yield('page_title')</title>
 
     <!-- Fav Icon -->
-    <link rel="icon" href="assets/img/favicon.png">
+    <link rel="icon" href="{{ asset('assets/img/favicon.png') }}">
 
 
     <!-- NFTMax Stylesheet -->
-    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }} ">
-    <link rel="stylesheet" href="{{ asset('assets/css/font-awesome-all.min.css') }} ">
-    <link rel="stylesheet" href="{{ asset('assets/css/charts.min.css') }} ">
-    <link rel="stylesheet" href="{{ asset('assets/css/slickslider.min.css') }} ">
-    <link rel="stylesheet" href="{{ asset('assets/css/reset.css') }} ">
-    <link rel="stylesheet" href="{{ asset('assets/style.css') }} ">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/font-awesome-all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/charts.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/slickslider.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/reset.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/style.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css" />
     <link rel="stylesheet"

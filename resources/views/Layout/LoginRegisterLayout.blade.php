@@ -13,7 +13,7 @@
     <title>KIB Journal Portal - @yield('page')</title>
 
     <!-- Fav Icon -->
-    <link rel="icon" href="img/favicon.png">
+    <link rel="icon" href="{{ asset('assets/img/favicon.png') }}">
 
     <!-- NFTMax Stylesheet -->
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
@@ -35,7 +35,7 @@
   <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
  <![endif]-->
 
-    <div class="body-bg" style="background-image:url('img/body-bg.jpg')">
+    <div class="body-bg" style="background-image:url('{{ asset('assets/img/body-bg.jpg') }}')">
         <!-- NFTMax Welcome -->
         <section class="nftmax-wc nftmax-wc__full">
             <div class="container-fluid">
