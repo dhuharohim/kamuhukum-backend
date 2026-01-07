@@ -200,7 +200,7 @@ class EditionController extends Controller
         if ($request->status == 'Published') {
             $publishedDate = date('Y-m-d H:i:s');
             if ($request->hasFile('cover_img')) {
-                if (Storage::exists($coverPath)) {
+                if (!empty($coverPath) && Storage::exists($coverPath)) {
                     Storage::delete($coverPath);
                 }
 
@@ -209,7 +209,7 @@ class EditionController extends Controller
             }
 
             if ($request->hasFile('pdf_file')) {
-                if (Storage::exists($pdfPath)) {
+                if (!empty($pdfPath) && Storage::exists($pdfPath)) {
                     Storage::delete($pdfPath);
                 }
 
@@ -256,11 +256,11 @@ class EditionController extends Controller
         DB::beginTransaction();
         try {
             $edition = Edition::findOrFail($id);
-            if (Storage::exists($edition->img_path)) {
+            if (!empty($edition->img_path) && Storage::exists($edition->img_path)) {
                 Storage::delete($edition->img_path);
             }
 
-            if (Storage::exists($edition->pdf_path)) {
+            if (!empty($edition->pdf_path) && Storage::exists($edition->pdf_path)) {
                 Storage::delete($edition->pdf_path);
             }
 

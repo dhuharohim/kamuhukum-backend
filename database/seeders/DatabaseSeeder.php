@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            // RoleSeeder::class,
+            RoleSeeder::class,
             // AnnouncementsTableSeeder::class,
             // EditionsTableSeeder::class,
             // ArticlesTableSeeder::class,
@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             // ArticleKeywordsTableSeeder::class,
             // ArticleReferencesTableSeeder::class,
             // ArticleFilesTableSeeder::class,
-            // BackboneUserSeeder::class
+            BackboneUserSeeder::class,
             SectionSeeder::class,
             // UserAnnouncementTableSeeder::class,
         ]);

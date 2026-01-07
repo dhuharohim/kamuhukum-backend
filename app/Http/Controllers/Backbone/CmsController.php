@@ -115,7 +115,7 @@ class CmsController extends Controller
             // Handle preview image update if provided
             if ($request->hasFile('preview')) {
                 // Delete old preview image
-                if (Storage::exists($section->preview)) {
+                if (!empty($section->preview) && Storage::exists($section->preview)) {
                     Storage::delete($section->preview);
                 }
 
@@ -173,7 +173,7 @@ class CmsController extends Controller
             }
 
             // Delete preview image if exists
-            if (Storage::exists($section->preview)) {
+            if (!empty($section->preview) && Storage::exists($section->preview)) {
                 Storage::delete($section->preview);
             }
 
@@ -183,7 +183,7 @@ class CmsController extends Controller
                 // Clean up any images in the content
                 if ($content->type == 'text') {
                     $this->cleanupUnusedImages($content->value, null);
-                } elseif ($content->type == 'image' && Storage::exists($content->value)) {
+                } elseif ($content->type == 'image' && !empty($content->value) && Storage::exists($content->value)) {
                     Storage::delete($content->value);
                 }
                 $content->delete();
@@ -245,7 +245,7 @@ class CmsController extends Controller
             foreach ($matches[1] as $src) {
                 // Convert URL to storage path by removing the app URL and /storage prefix
                 $path = str_replace(config('app.url'), '', $src);
-                if (Storage::exists('public/' . $path)) {
+                if (!empty($path) && Storage::exists('public/' . $path)) {
                     $usedImages[] = 'public/' . $path;
                 }
             }
@@ -270,7 +270,7 @@ class CmsController extends Controller
 
         // Delete unused images
         foreach ($unusedImages as $image) {
-            if (Storage::exists($image)) {
+            if (!empty($image) && Storage::exists($image)) {
                 Storage::delete($image);
             }
         }

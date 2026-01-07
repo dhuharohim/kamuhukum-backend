@@ -289,7 +289,7 @@ class JournalController extends Controller
             if (count($articleFiles) > 0) {
                 foreach ($articleFiles as $articleFile) {
                     $filePath = $articleFile->file_path;
-                    if (Storage::exists($filePath)) {
+                    if (!empty($filePath) && Storage::exists($filePath)) {
                         Storage::delete($filePath);
                     }
 
@@ -525,7 +525,7 @@ class JournalController extends Controller
             if (count($articleFiles) > 0) {
                 foreach ($articleFiles as $articleFile) {
                     $filePath = $articleFile->file_path;
-                    if (Storage::exists($filePath)) {
+                    if (!empty($filePath) && Storage::exists($filePath)) {
                         Storage::delete($filePath);
                     }
 

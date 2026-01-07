@@ -230,7 +230,7 @@ class SubmissionController extends Controller
             if (count($exsistingFiles) > 0 && count($exsistingFilesReq) == 0) {
                 $articleFiles = ArticleFile::where('article_id')->get();
                 foreach ($articleFiles as $articleFile) {
-                    if (Storage::exists($articleFile->file_path)) {
+                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
                         Storage::delete($articleFile->file_path);
                     }
                 }
@@ -242,7 +242,7 @@ class SubmissionController extends Controller
                     ->get();
 
                 foreach ($articleFiles as $articleFile) {
-                    if (Storage::exists($articleFile->file_path)) {
+                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
                         Storage::delete($articleFile->file_path);
                     }
                 }

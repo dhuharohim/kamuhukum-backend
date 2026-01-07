@@ -112,7 +112,7 @@
                         message: 'The item has been deleted successfully.',
                         position: 'topRight'
                     });
-                    location.reload();
+                    // location.reload();
                 },
                 error: function(xhr, status, error) {
                     iziToast.error({
@@ -120,7 +120,7 @@
                         message: 'There was an error deleting the item.',
                         position: 'topRight'
                     });
-                    location.reload();
+                    // location.reload();
                 }
             });
         }

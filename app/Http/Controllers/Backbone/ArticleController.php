@@ -334,7 +334,7 @@ class ArticleController extends Controller
             if (count($exsistingFiles) > 0 && count($exsistingFilesReq) == 0) {
                 $articleFiles = ArticleFile::where('article_id')->get();
                 foreach ($articleFiles as $articleFile) {
-                    if (Storage::exists($articleFile->file_path)) {
+                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
                         Storage::delete($articleFile->file_path);
                     }
                 }
@@ -346,7 +346,7 @@ class ArticleController extends Controller
                     ->get();
 
                 foreach ($articleFiles as $articleFile) {
-                    if (Storage::exists($articleFile->file_path)) {
+                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
                         Storage::delete($articleFile->file_path);
                     }
                 }
@@ -420,7 +420,7 @@ class ArticleController extends Controller
             $articleFiles = ArticleFile::where('article_id', $article->id)->get();
             if (count($articleFiles) > 0) {
                 foreach ($articleFiles as $file) {
-                    if (Storage::exists($file->file_path)) {
+                    if (!empty($file->file_path) && Storage::exists($file->file_path)) {
                         Storage::delete($file->file_path);
                     }
 

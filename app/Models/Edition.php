@@ -61,7 +61,7 @@ class Edition extends Model
 
     public function getSignedEditionPdfAttribute()
     {
-        if (empty($this->img_path))
+        if (empty($this->pdf_path))
             return;
 
         return config('app.url') . 'admin/storage/' . $this->pdf_path;
