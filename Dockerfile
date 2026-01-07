@@ -15,6 +15,8 @@ RUN a2enmod rewrite headers
 RUN sed -ri 's/AllowOverride[[:space:]]+None/AllowOverride All/g' /etc/apache2/apache2.conf
 RUN echo 'ServerName localhost' > /etc/apache2/conf-available/servername.conf && a2enconf servername
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# Enable Apache to follow symbolic links
+RUN sed -i 's/Options Indexes FollowSymLinks/Options Indexes FollowSymLinks MultiViews/' /etc/apache2/apache2.conf
 WORKDIR /var/www/html
 COPY . /var/www/html
 COPY --from=vendor /app/vendor /var/www/html/vendor
@@ -30,11 +32,17 @@ CMD ["/bin/bash", "-lc", " \
         sed -ri \"s/^Listen 80/Listen ${PORT}/\" /etc/apache2/ports.conf; \
         sed -ri \"s/<VirtualHost \\*:80>/<VirtualHost *:${PORT}>/\" /etc/apache2/sites-available/000-default.conf; \
     fi; \
-    # 1. Clear the 'fake' folder and create a fresh symbolic link
-    rm -rf public/storage && php artisan storage:link; \
-    # 2. Fix permissions for the mounted volume
+    # 1. FORCE recreate the link (standard artisan link can be finicky in Docker)
+    rm -rf /var/www/html/public/storage; \
+    ln -s /var/www/html/storage/app/public /var/www/html/public/storage; \
+    
+    # 2. Fix the Permissions (CRITICAL: root links cause 404s)
+    chown -h www-data:www-data /var/www/html/public/storage; \
     chown -R www-data:www-data /var/www/html/storage; \
-    # 3. Cache and start
+    chmod -R 775 /var/www/html/storage; \
+    
+    # 3. Start
     php artisan config:cache || true; \
+    apache2-foreground \
     apache2-foreground \
 "]
