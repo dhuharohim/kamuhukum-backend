@@ -8,7 +8,7 @@ RUN composer install --no-dev --no-scripts --prefer-dist --no-progress --no-inte
 
 FROM php:8.2-apache
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN apt-get update && apt-get install -y git unzip libzip-dev libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev libmagickwand-dev ghostscript poppler-utils pkg-config && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git unzip libzip-dev libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev libmagickwand-dev ghostscript poppler-utils pkg-config curl && rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd zip pdo_mysql exif
 RUN pecl install imagick && docker-php-ext-enable imagick
 RUN a2enmod rewrite headers
@@ -20,4 +20,5 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer dump-autoload -o
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 EXPOSE 80
-CMD ["apache2-foreground"]
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s CMD curl -fsS http://localhost/ || exit 1
+CMD ["/bin/bash","-lc","php artisan config:cache || true; php artisan storage:link || true; apache2-foreground"]
