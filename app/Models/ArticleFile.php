@@ -43,6 +43,6 @@ class ArticleFile extends Model
         if (empty($this->file_path))
             return;
 
-        return config('app.url') . 'admin/storage/' . $this->file_path;
+        return config('app.url') . 'storage/' . $this->file_path;
     }
 }

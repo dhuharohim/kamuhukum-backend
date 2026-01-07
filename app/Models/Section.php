@@ -21,7 +21,7 @@ class Section extends Model
         if (empty($this->preview))
             return;
 
-        return config('app.url') . 'admin/storage/' . $this->preview;
+        return config('app.url') . 'storage/' . $this->preview;
     }
 
     public function contents(): HasMany

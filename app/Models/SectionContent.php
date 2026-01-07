@@ -19,7 +19,7 @@ class SectionContent extends Model
     {
         if ($this->type !== 'image' && $this->value) return;
 
-        return config('app.url') . 'admin/storage/' . $this->value;
+        return config('app.url') . 'storage/' . $this->value;
     }
 
     public function section(): BelongsTo
