@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('section_id')->constrained('sections');
             $table->string('key')->index();
-            $table->text('value')->index();
+            $table->text('value');
             $table->timestamps();
         });
     }
