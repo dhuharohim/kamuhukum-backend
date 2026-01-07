@@ -1,5 +1,7 @@
 FROM php:8.2-cli AS vendor
 WORKDIR /app
+RUN apt-get update && apt-get install -y git unzip libzip-dev && rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-install zip
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-progress --no-interaction
