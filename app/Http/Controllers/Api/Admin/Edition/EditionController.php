@@ -10,26 +10,27 @@ use App\Models\Edition;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Services\StorageService;
 
 
 class EditionController extends Controller
 {
-    public function index(Request $request) {
-        $edition = Edition::select([ 'name_edition','volume','issue','description','publish_date','status','slug','year','img']);
+    public function index(Request $request)
+    {
+        $edition = Edition::select(['name_edition', 'volume', 'issue', 'description', 'publish_date', 'status', 'slug', 'year', 'img']);
 
-        if(!empty($request->search)){
+        if (!empty($request->search)) {
             $request->search;
-            $edition = $edition->where('name_edition', 'like', '%'.$request->search.'%');
+            $edition = $edition->where('name_edition', 'like', '%' . $request->search . '%');
         }
 
-        if(!empty($request->year)){
+        if (!empty($request->year)) {
             $edition = $edition->where('year', $request->year);
         }
 
-        if(!empty($request->status)) {
+        if (!empty($request->status)) {
             $edition = $edition->where('status', $request->status);
         }
 
@@ -38,8 +39,9 @@ class EditionController extends Controller
         return successResponse($edition);
     }
 
-    public function store (Request $request) {
-        $rules = [ 
+    public function store(Request $request)
+    {
+        $rules = [
             "img" => "mimes:jpg,png,jpeg,gif,svg|max:2048",
             'edition_name' => 'required',
             'volume' => 'required',
@@ -48,60 +50,62 @@ class EditionController extends Controller
             'year' => 'required'
         ];
 
-         $validateData = Validator::make($request->all(), $rules);  
+        $validateData = Validator::make($request->all(), $rules);
 
-        if($validateData->fails())
+        if ($validateData->fails())
             return badRequestResponse($validateData->errors()->first());
-        
+
 
         $slug = str_replace(' ', '-', $request->edition_name);
         $slug = Str::lower($slug);
 
-       
+
 
         $edition = new Edition();
         $edition->name_edition = $request->edition_name;
         $edition->volume = $request->volume;
         $edition->issue =  $request->issue;
-        $edition->description = $request->description;  
-        $edition->publish_date = $request->status  == 'publish' ? Carbon::now()->format('Y-m-d') : null;       
+        $edition->description = $request->description;
+        $edition->publish_date = $request->status  == 'publish' ? Carbon::now()->format('Y-m-d') : null;
         $edition->status = $request->status == 'publish' ? 'Published' : 'Draft';
         $edition->slug = $slug;
 
-         if($request->file('img')) {
-           $path = $request->file('img')->store('public/edition/'.$slug."/image");
-            $url = Storage::url($path);
+        if ($request->file('img')) {
+            $storage = new StorageService();
+            $path = $storage->upload($request->file('img'), 'uploads/edition/' . $slug . "/image");
+            $url = $storage->cdnUrl($path);
             $edition->img = $url;
         }
 
-        $edition->year= Carbon::parse($request->year)->format('Y');
+        $edition->year = Carbon::parse($request->year)->format('Y');
         $edition->save();
 
-        if($request->status == 'publish'){
+        if ($request->status == 'publish') {
             Edition::where('id', '!=', $edition->id)
-                    ->where('status', 'Published')
-                    ->update([
-                        'status' => 'Archive'
-                    ]);
+                ->where('status', 'Published')
+                ->update([
+                    'status' => 'Archive'
+                ]);
         }
 
-        return successResponse($edition,'Success created new editions');
-
+        return successResponse($edition, 'Success created new editions');
     }
 
-    public function show ($slug) {
-        
-        $edition = Edition::with(['articles', 'articles.keywords', 'articles.references'])->where('slug',$slug)->first();
-        if(empty($edition))
+    public function show($slug)
+    {
+
+        $edition = Edition::with(['articles', 'articles.keywords', 'articles.references'])->where('slug', $slug)->first();
+        if (empty($edition))
             return recordNotFoundResponse('Edisi tidak ditemukan');
 
         return successResponse($edition);
     }
 
-    public function update(Request $request,$slug) {
+    public function update(Request $request, $slug)
+    {
         $edition = Edition::where('slug', $slug)->first();
 
-        if(empty($edition))
+        if (empty($edition))
             return recordNotFoundResponse('Edisi tidak ditemukan');
 
         $slug = str_replace(' ', '-', $request->name_edition);
@@ -112,74 +116,82 @@ class EditionController extends Controller
         $edition->slug = $slug;
         $edition->year = $request->year;
 
-         if($request->file('img')) {
-           $path = $request->file('img')->store('public/edition/'.$slug."/image");
-           $url = Storage::url($path);
-           Storage::delete($edition->img);
-           $edition->img = $url;
+        if ($request->file('img')) {
+            $storage = new StorageService();
+            $path = $storage->upload($request->file('img'), 'uploads/edition/' . $slug . "/image");
+            $url = $storage->cdnUrl($path);
+            $storage->delete($storage->pathFromUrl($edition->img));
+            $edition->img = $url;
         }
         $edition->save();
 
-        return successResponse($edition,'Berhasil mengubah edisi');
-   }
-
-   public function updateStatus(Request $request, $slug) {
-    $rules = [
-        'status' => 'required',
-    ];
-
-    $validateData = Validator::make($request->all(), $rules);  
-
-    if($validateData->fails())
-        return badRequestResponse($validateData->errors()->first());
-
-    $edition = Edition::where('slug', $slug)->first();
-
-    if(empty($edition))
-        return recordNotFoundResponse('Edisi tidak ditemukan');
-
-    if($request->status == 'publish'){
-        $edition->status = 'Published';
-        Edition::where('status', 'Published')->update([
-            'status' => 'Archive'
-        ]);
+        return successResponse($edition, 'Berhasil mengubah edisi');
     }
-    
-    if($request->status == 'archive')
-        $edition->status = 'Archive';
 
-    $edition->save();
+    public function updateStatus(Request $request, $slug)
+    {
+        $rules = [
+            'status' => 'required',
+        ];
 
-    return successResponse(null,'Berhasil mengubah status');
-   }
+        $validateData = Validator::make($request->all(), $rules);
 
+        if ($validateData->fails())
+            return badRequestResponse($validateData->errors()->first());
 
-   public function delete($slug) {
+        $edition = Edition::where('slug', $slug)->first();
 
-    $edition = Edition::where('slug',$slug)->first();
-    if(empty($edition))
-        return recordNotFoundResponse('Edisi tidak ditemukan');
+        if (empty($edition))
+            return recordNotFoundResponse('Edisi tidak ditemukan');
 
-    $article = Article::where('edition_id', $edition->id);
-    
-    $articleIds = $article->get()->pluck('id')->toArray();
-    $articlePath = $article->get()->pluck('path')->toArray();
-    
-    try {
-        DB::beginTransaction();
-        ArticleKeyword::whereIn('article_id', $articleIds)->delete();
-        ArticleReference::whereIn('article_id', $articleIds)->delete();
-        $article->delete();
-        $edition->delete();
-        
-        if(count($articlePath) != 0)
-            Storage::delete($articlePath);
+        if ($request->status == 'publish') {
+            $edition->status = 'Published';
+            Edition::where('status', 'Published')->update([
+                'status' => 'Archive'
+            ]);
+        }
 
-        DB::commit();
-        return successResponse(null, "Success delete edition");
-    } catch (\Throwable $th) {
-        DB::rollBack();
-        return internalErrorResponse($th->getMessage());
+        if ($request->status == 'archive')
+            $edition->status = 'Archive';
+
+        $edition->save();
+
+        return successResponse(null, 'Berhasil mengubah status');
     }
-   }
+
+
+    public function delete($slug)
+    {
+
+        $edition = Edition::where('slug', $slug)->first();
+        if (empty($edition))
+            return recordNotFoundResponse('Edisi tidak ditemukan');
+
+        $article = Article::where('edition_id', $edition->id);
+
+        $articleIds = $article->get()->pluck('id')->toArray();
+        $articlePath = $article->get()->pluck('path')->toArray();
+
+        try {
+            DB::beginTransaction();
+            ArticleKeyword::whereIn('article_id', $articleIds)->delete();
+            ArticleReference::whereIn('article_id', $articleIds)->delete();
+            $article->delete();
+            $edition->delete();
+
+            if (count($articlePath) != 0) {
+                $storage = new StorageService();
+                $paths = array_map(fn($u) => $storage->pathFromUrl($u), $articlePath);
+                foreach ($paths as $p) {
+                    $storage->delete($p);
+                }
+            }
+
+            DB::commit();
+            return successResponse(null, "Success delete edition");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return internalErrorResponse($th->getMessage());
+        }
+    }
 }

@@ -9,8 +9,8 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\StorageService;
 
 class CmsController extends Controller
 {
@@ -19,7 +19,7 @@ class CmsController extends Controller
     {
         $this->middleware(function ($request, $next) {
             $user = Auth::user();
-            $this->userFor = $user->hasRole(['admin_law']) ? 'law' : 'economic';
+            $this->userFor = $user->role_name === 'admin_law' ? 'law' : 'economic';
             return $next($request);
         });
     }
@@ -63,7 +63,8 @@ class CmsController extends Controller
 
             $slug = Str::slug($request->name);
             $filename = 'preview-' . $slug . '.' . $request->file('preview')->getClientOriginalExtension();
-            $previewPath = $request->file('preview')->storeAs('uploads/cms/sections/' . $this->userFor, $filename);
+            $storage = new StorageService();
+            $previewPath = $storage->upload($request->file('preview'), 'uploads/cms/sections/' . $this->userFor, $filename);
 
             $section = Section::create([
                 'name' => $request->name,
@@ -115,12 +116,13 @@ class CmsController extends Controller
             // Handle preview image update if provided
             if ($request->hasFile('preview')) {
                 // Delete old preview image
-                if (!empty($section->preview) && Storage::exists($section->preview)) {
-                    Storage::delete($section->preview);
+                $storage = new StorageService();
+                if (!empty($section->preview) && $storage->exists($section->preview)) {
+                    $storage->delete($section->preview);
                 }
 
                 $filename = 'preview-' . $slug . '.' . $request->file('preview')->getClientOriginalExtension();
-                $previewPath = $request->file('preview')->storeAs('uploads/cms/sections/' . $this->userFor, $filename);
+                $previewPath = (new StorageService())->upload($request->file('preview'), 'uploads/cms/sections/' . $this->userFor, $filename);
                 $section->preview = $previewPath;
             }
 
@@ -173,8 +175,9 @@ class CmsController extends Controller
             }
 
             // Delete preview image if exists
-            if (!empty($section->preview) && Storage::exists($section->preview)) {
-                Storage::delete($section->preview);
+            $storage = new StorageService();
+            if (!empty($section->preview) && $storage->exists($section->preview)) {
+                $storage->delete($section->preview);
             }
 
             // Get and delete section contents
@@ -183,8 +186,8 @@ class CmsController extends Controller
                 // Clean up any images in the content
                 if ($content->type == 'text') {
                     $this->cleanupUnusedImages($content->value, null);
-                } elseif ($content->type == 'image' && !empty($content->value) && Storage::exists($content->value)) {
-                    Storage::delete($content->value);
+                } elseif ($content->type == 'image' && !empty($content->value) && (new StorageService())->exists($content->value)) {
+                    (new StorageService())->delete($content->value);
                 }
                 $content->delete();
             }
@@ -211,14 +214,15 @@ class CmsController extends Controller
 
             $file = $request->file('image');
             $filename = 'editor-' . time() . '-' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('uploads/cms/editor/' . $this->userFor, $filename, 'public');
+            $storage = new StorageService();
+            $path = $storage->upload($file, 'uploads/cms/editor/' . $this->userFor, $filename);
 
             if (!$path) {
                 throw new Exception('Failed to store image');
             }
 
             return response()->json([
-                'url' => config('app.url') . 'storage/' . $path,
+                'url' => (new StorageService())->cdnUrl($path),
                 'success' => true,
             ]);
         } catch (Exception $e) {
@@ -243,10 +247,9 @@ class CmsController extends Controller
 
         if (isset($matches[1])) {
             foreach ($matches[1] as $src) {
-                // Convert URL to storage path by removing the app URL and /storage prefix
-                $path = str_replace(config('app.url'), '', $src);
-                if (!empty($path) && Storage::exists('public/' . $path)) {
-                    $usedImages[] = 'public/' . $path;
+                $path = (new StorageService())->pathFromUrl($src);
+                if (!empty($path) && (new StorageService())->exists($path)) {
+                    $usedImages[] = $path;
                 }
             }
         }
@@ -270,8 +273,8 @@ class CmsController extends Controller
 
         // Delete unused images
         foreach ($unusedImages as $image) {
-            if (!empty($image) && Storage::exists($image)) {
-                Storage::delete($image);
+            if (!empty($image) && (new StorageService())->exists($image)) {
+                (new StorageService())->delete($image);
             }
         }
     }

@@ -8,9 +8,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Services\StorageService;
 
 class EditionController extends Controller
 {
@@ -19,7 +19,8 @@ class EditionController extends Controller
     {
         $this->middleware(function ($request, $next) {
             $user = Auth::user();
-            $this->editionFor = $user->hasRole(['admin_law', 'editor_law']) ? 'law' : 'economic';
+            $role = $user->role_name;
+            $this->editionFor = in_array($role, ['admin_law', 'editor_law']) ? 'law' : 'economic';
             return $next($request);
         });
     }
@@ -38,7 +39,8 @@ class EditionController extends Controller
      */
     public function create()
     {
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        $role = Auth::user()->role_name;
+        if (in_array($role, ['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
@@ -50,7 +52,8 @@ class EditionController extends Controller
      */
     public function store(Request $request)
     {
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        $role = Auth::user()->role_name;
+        if (in_array($role, ['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
@@ -90,12 +93,13 @@ class EditionController extends Controller
         $pdfPath = null;
         if ($request->status !== 'Draft') {
             $publishedDate = date('Y-m-d H:i:s');
+            $storage = new StorageService();
             $filename = 'sampul-' . $slug . '.' . $request->file('cover_img')->getClientOriginalExtension();
-            $coverPath = $request->file('cover_img')->storeAs('uploads/editions/' . $this->editionFor, $filename);
+            $coverPath = $storage->upload($request->file('cover_img'), 'uploads/editions/' . $this->editionFor, $filename);
 
             if ($request->hasFile('pdf_file')) {
                 $filePdfName = 'file-' . $slug . '.' . $request->file('pdf_file')->getClientOriginalExtension();
-                $pdfPath = $request->file('pdf_file')->storeAs('uploads/editions/' . $this->editionFor, $filePdfName);
+                $pdfPath = $storage->upload($request->file('pdf_file'), 'uploads/editions/' . $this->editionFor, $filePdfName);
             }
         }
 
@@ -154,7 +158,8 @@ class EditionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        $role = Auth::user()->role_name;
+        if (in_array($role, ['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
@@ -199,22 +204,23 @@ class EditionController extends Controller
         $pdfPath = $edition->pdf_path ?? '';
         if ($request->status == 'Published') {
             $publishedDate = date('Y-m-d H:i:s');
+            $storage = new StorageService();
             if ($request->hasFile('cover_img')) {
-                if (!empty($coverPath) && Storage::exists($coverPath)) {
-                    Storage::delete($coverPath);
+                if (!empty($coverPath) && $storage->exists($coverPath)) {
+                    $storage->delete($coverPath);
                 }
 
                 $filename = 'sampul-' . $slug . '.' . $request->file('cover_img')->getClientOriginalExtension();
-                $coverPath = $request->file('cover_img')->storeAs('uploads/editions/' . $this->editionFor, $filename);
+                $coverPath = $storage->upload($request->file('cover_img'), 'uploads/editions/' . $this->editionFor, $filename);
             }
 
             if ($request->hasFile('pdf_file')) {
-                if (!empty($pdfPath) && Storage::exists($pdfPath)) {
-                    Storage::delete($pdfPath);
+                if (!empty($pdfPath) && $storage->exists($pdfPath)) {
+                    $storage->delete($pdfPath);
                 }
 
                 $filePdfName = 'file-' . $slug . '.' . $request->file('pdf_file')->getClientOriginalExtension();
-                $pdfPath = $request->file('pdf_file')->storeAs('uploads/editions/' . $this->editionFor, $filePdfName);
+                $pdfPath = $storage->upload($request->file('pdf_file'), 'uploads/editions/' . $this->editionFor, $filePdfName);
             }
         }
 
@@ -249,26 +255,28 @@ class EditionController extends Controller
      */
     public function destroy(string $id)
     {
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        $role = Auth::user()->role_name;
+        if (in_array($role, ['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
         DB::beginTransaction();
         try {
             $edition = Edition::findOrFail($id);
-            if (!empty($edition->img_path) && Storage::exists($edition->img_path)) {
-                Storage::delete($edition->img_path);
+            $storage = new StorageService();
+            if (!empty($edition->img_path) && $storage->exists($edition->img_path)) {
+                $storage->delete($edition->img_path);
             }
 
-            if (!empty($edition->pdf_path) && Storage::exists($edition->pdf_path)) {
-                Storage::delete($edition->pdf_path);
+            if (!empty($edition->pdf_path) && $storage->exists($edition->pdf_path)) {
+                $storage->delete($edition->pdf_path);
             }
 
             $edition->delete();
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return validateErrorResponse('Error');
+            return validateErrorResponse('Error: ' . $e->getMessage());
         }
 
         return successResponse([], 'success');

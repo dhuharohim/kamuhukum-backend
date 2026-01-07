@@ -9,9 +9,9 @@ use App\Models\ArticleReference;
 use App\Models\Edition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Services\StorageService;
 
 
 class ArticleController extends Controller
@@ -56,8 +56,9 @@ class ArticleController extends Controller
 
         try {
             if ($request->file('file')) {
-                $path = $request->file('file')->store('public/edition/' . $slug . '/article/' . $article_slug . '/pdf');
-                $url = Storage::url($path);
+                $storage = new StorageService();
+                $path = $storage->upload($request->file('file'), 'uploads/edition/' . $slug . '/article/' . $article_slug . '/pdf');
+                $url = $storage->cdnUrl($path);
             }
         } catch (\Throwable $th) {
             return internalErrorResponse("Failed upload article");
@@ -134,9 +135,11 @@ class ArticleController extends Controller
 
         try {
             if ($request->file('file')) {
-                $path = $request->file('file')->store('public/edition/' . $slug . '/article/' . $article_slug . '/pdf');
-                $url = Storage::url($path);
-                Storage::delete($article->path);
+                $storage = new StorageService();
+                $path = $storage->upload($request->file('file'), 'uploads/edition/' . $slug . '/article/' . $article_slug . '/pdf');
+                $url = $storage->cdnUrl($path);
+                $prevPath = $storage->pathFromUrl($article->path);
+                $storage->delete($prevPath);
                 $article->path = $url;
             }
         } catch (\Throwable $th) {
@@ -208,7 +211,8 @@ class ArticleController extends Controller
 
         try {
             DB::beginTransaction();
-            Storage::delete($article->path);
+            $storage = new StorageService();
+            $storage->delete($storage->pathFromUrl($article->path));
             ArticleKeyword::where('article_id', $article->id)->delete();
             ArticleReference::where('article_id', $article->id)->delete();
             $article->delete();

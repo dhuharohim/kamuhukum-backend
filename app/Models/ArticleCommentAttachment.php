@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\StorageService;
 
 class ArticleCommentAttachment extends Model
 {
@@ -29,6 +30,7 @@ class ArticleCommentAttachment extends Model
         if (empty($this->file_path))
             return;
 
-        return config('app.url') . 'storage/' . $this->file_path;
+        $storage = new StorageService();
+        return $storage->cdnUrl($this->file_path);
     }
 }

@@ -18,8 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\StorageService;
 
 
 class SubmissionController extends Controller
@@ -30,8 +30,9 @@ class SubmissionController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            $this->submissionFor = Auth::user()->hasRole(['admin_law', 'editor_law']) ? 'law' : 'economic';
-            $this->isAdmin = Auth::user()->hasRole(['admin_law', 'admin_economy']);
+            $role = Auth::user()->role_name;
+            $this->submissionFor = in_array($role, ['admin_law', 'editor_law']) ? 'law' : 'economic';
+            $this->isAdmin = in_array($role, ['admin_law', 'admin_economy']);
             return $next($request);
         });
     }
@@ -230,8 +231,9 @@ class SubmissionController extends Controller
             if (count($exsistingFiles) > 0 && count($exsistingFilesReq) == 0) {
                 $articleFiles = ArticleFile::where('article_id')->get();
                 foreach ($articleFiles as $articleFile) {
-                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
-                        Storage::delete($articleFile->file_path);
+                    $storage = new StorageService();
+                    if (!empty($articleFile->file_path) && $storage->exists($articleFile->file_path)) {
+                        $storage->delete($articleFile->file_path);
                     }
                 }
 
@@ -242,8 +244,9 @@ class SubmissionController extends Controller
                     ->get();
 
                 foreach ($articleFiles as $articleFile) {
-                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
-                        Storage::delete($articleFile->file_path);
+                    $storage = new StorageService();
+                    if (!empty($articleFile->file_path) && $storage->exists($articleFile->file_path)) {
+                        $storage->delete($articleFile->file_path);
                     }
                 }
 
@@ -260,14 +263,14 @@ class SubmissionController extends Controller
                         // Generate the filename
                         $filename = 'file-' . $slug . '.' . $uploadedFile->getClientOriginalExtension();
 
-                        // Store the file and get the storage path
-                        $uploadedFile->storeAs('uploads/articles/' . $this->submissionFor, $filename, 'public');
+                        $storage = new StorageService();
+                        $path = $storage->upload($uploadedFile, 'uploads/articles/' . $this->submissionFor, $filename);
 
                         // Save file info in the database
                         ArticleFile::create([
                             'article_id' => $article->id, // Replace with actual article ID
                             'file_name' => $filename,
-                            'file_path' => 'uploads/articles/' . $this->submissionFor . '/' . $filename,
+                            'file_path' => $path,
                             'type' => $file['type']
                         ]);
                     }

@@ -20,8 +20,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\StorageService;
 
 
 class ArticleController extends Controller
@@ -32,7 +32,8 @@ class ArticleController extends Controller
     {
         $this->middleware(function ($request, $next) {
             $user = Auth::user();
-            $this->articleFor = $user->hasRole(['admin_law', 'editor_law']) ? 'law' : 'economic';
+            $role = $user->role_name;
+            $this->articleFor = in_array($role, ['admin_law', 'editor_law']) ? 'law' : 'economic';
             return $next($request);
         });
     }
@@ -68,7 +69,8 @@ class ArticleController extends Controller
             return redirect()->back()->with('message', 'Edition not found');
         }
 
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        $role = Auth::user()->role_name;
+        if (in_array($role, ['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
@@ -175,14 +177,14 @@ class ArticleController extends Controller
                     // Generate the filename
                     $filename = 'file-' . $slug . '.' . $uploadedFile->getClientOriginalExtension();
 
-                    // Store the file and get the storage path
-                    $uploadedFile->storeAs('uploads/articles/' . $this->articleFor, $filename, 'public');
+                    $storage = new StorageService();
+                    $path = $storage->upload($uploadedFile, 'uploads/articles/' . $this->articleFor, $filename);
 
                     // Save file info in the database
                     ArticleFile::create([
                         'article_id' => $article->id, // Replace with actual article ID
                         'file_name' => $filename,
-                        'file_path' => 'uploads/articles/' . $this->articleFor . '/' . $filename,
+                        'file_path' => $path,
                         'type' => $file['type']
                     ]);
                 }
@@ -334,8 +336,9 @@ class ArticleController extends Controller
             if (count($exsistingFiles) > 0 && count($exsistingFilesReq) == 0) {
                 $articleFiles = ArticleFile::where('article_id')->get();
                 foreach ($articleFiles as $articleFile) {
-                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
-                        Storage::delete($articleFile->file_path);
+                    $storage = new StorageService();
+                    if (!empty($articleFile->file_path) && $storage->exists($articleFile->file_path)) {
+                        $storage->delete($articleFile->file_path);
                     }
                 }
 
@@ -346,8 +349,9 @@ class ArticleController extends Controller
                     ->get();
 
                 foreach ($articleFiles as $articleFile) {
-                    if (!empty($articleFile->file_path) && Storage::exists($articleFile->file_path)) {
-                        Storage::delete($articleFile->file_path);
+                    $storage = new StorageService();
+                    if (!empty($articleFile->file_path) && $storage->exists($articleFile->file_path)) {
+                        $storage->delete($articleFile->file_path);
                     }
                 }
 
@@ -364,14 +368,14 @@ class ArticleController extends Controller
                         // Generate the filename
                         $filename = 'file-' . $slug . '.' . $uploadedFile->getClientOriginalExtension();
 
-                        // Store the file and get the storage path
-                        $uploadedFile->storeAs('uploads/articles/' . $this->articleFor, $filename, 'public');
+                        $storage = new StorageService();
+                        $path = $storage->upload($uploadedFile, 'uploads/articles/' . $this->articleFor, $filename);
 
                         // Save file info in the database
                         ArticleFile::create([
                             'article_id' => $article->id, // Replace with actual article ID
                             'file_name' => $filename,
-                            'file_path' => 'uploads/articles/' . $this->articleFor . '/' . $filename,
+                            'file_path' => $path,
                             'type' => $file['type']
                         ]);
                     }
@@ -396,7 +400,8 @@ class ArticleController extends Controller
             return redirect()->back()->with('message', 'Edition not found');
         }
 
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        $role = Auth::user()->role_name;
+        if (in_array($role, ['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 
@@ -420,8 +425,9 @@ class ArticleController extends Controller
             $articleFiles = ArticleFile::where('article_id', $article->id)->get();
             if (count($articleFiles) > 0) {
                 foreach ($articleFiles as $file) {
-                    if (!empty($file->file_path) && Storage::exists($file->file_path)) {
-                        Storage::delete($file->file_path);
+                    $storage = new StorageService();
+                    if (!empty($file->file_path) && $storage->exists($file->file_path)) {
+                        $storage->delete($file->file_path);
                     }
 
                     $file->forceDelete();
@@ -479,7 +485,8 @@ class ArticleController extends Controller
             $attachments = [];
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
-                    $path = $file->storeAs('uploads/comment_attachments/' . $article->article_for, $file->getClientOriginalName(), 'public');
+                    $storage = new StorageService();
+                    $path = $storage->upload($file, 'uploads/comment_attachments/' . $article->article_for, $file->getClientOriginalName());
                     $attachment = ArticleCommentAttachment::create([
                         'article_comment_id' => $comment->id,
                         'file_name' => $file->getClientOriginalName(),
@@ -511,7 +518,8 @@ class ArticleController extends Controller
 
     public function generateDoi($editionId)
     {
-        if (Auth::user()->hasRole(['editor_law', 'editor_economy'])) {
+        $role = Auth::user()->role_name;
+        if (in_array($role, ['editor_law', 'editor_economy'])) {
             return redirect()->back()->with('message', 'Unauthorized');
         }
 

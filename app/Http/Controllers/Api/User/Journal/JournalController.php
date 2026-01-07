@@ -23,9 +23,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Traits\CmsHelper;
+use App\Services\StorageService;
 
 
 class JournalController extends Controller
@@ -289,8 +289,9 @@ class JournalController extends Controller
             if (count($articleFiles) > 0) {
                 foreach ($articleFiles as $articleFile) {
                     $filePath = $articleFile->file_path;
-                    if (!empty($filePath) && Storage::exists($filePath)) {
-                        Storage::delete($filePath);
+                    $storage = new StorageService();
+                    if (!empty($filePath) && $storage->exists($filePath)) {
+                        $storage->delete($filePath);
                     }
 
                     $articleFile->delete();
@@ -300,8 +301,7 @@ class JournalController extends Controller
             foreach ($request->article_files as $index => $fileData) {
                 $path = 'failed';
                 if ($request->hasFile("article_files.$index.file")) {
-                    $path = $request->file("article_files.$index.file")->storeAs('uploads/articles/' . $article->article_for, $fileData['name'], 'public');
-                    // $url = Storage::url($path);
+                    $path = (new StorageService())->upload($request->file("article_files.$index.file"), 'uploads/articles/' . $article->article_for, $fileData['name']);
                 }
 
                 ArticleFile::create([
@@ -470,7 +470,7 @@ class JournalController extends Controller
             $attachments = [];
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
-                    $path = $file->storeAs('uploads/comment_attachments/' . $article->article_for, $file->getClientOriginalName(), 'public');
+                    $path = (new StorageService())->upload($file, 'uploads/comment_attachments/' . $article->article_for, $file->getClientOriginalName());
                     $attachment = ArticleCommentAttachment::create([
                         'article_comment_id' => $comment->id,
                         'file_path' => $path,
@@ -525,8 +525,9 @@ class JournalController extends Controller
             if (count($articleFiles) > 0) {
                 foreach ($articleFiles as $articleFile) {
                     $filePath = $articleFile->file_path;
-                    if (!empty($filePath) && Storage::exists($filePath)) {
-                        Storage::delete($filePath);
+                    $storage = new StorageService();
+                    if (!empty($filePath) && $storage->exists($filePath)) {
+                        $storage->delete($filePath);
                     }
 
                     $articleFile->delete();

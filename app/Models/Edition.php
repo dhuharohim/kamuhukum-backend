@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Services\StorageService;
 
 class Edition extends Model
 {
@@ -56,7 +57,8 @@ class Edition extends Model
         if (empty($this->img_path))
             return;
 
-        return config('app.url') . 'storage/' . $this->img_path;
+        $storage = new StorageService();
+        return $storage->cdnUrl($this->img_path);
     }
 
     public function getSignedEditionPdfAttribute()
@@ -64,7 +66,8 @@ class Edition extends Model
         if (empty($this->pdf_path))
             return;
 
-        return config('app.url') . 'storage/' . $this->pdf_path;
+        $storage = new StorageService();
+        return $storage->cdnUrl($this->pdf_path);
     }
 
     public function getPublishDateFormattedAttribute()

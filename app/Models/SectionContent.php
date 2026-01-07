@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Services\StorageService;
 
 class SectionContent extends Model
 {
@@ -19,7 +20,8 @@ class SectionContent extends Model
     {
         if ($this->type !== 'image' && $this->value) return;
 
-        return config('app.url') . 'storage/' . $this->value;
+        $storage = new StorageService();
+        return $storage->cdnUrl($this->value);
     }
 
     public function section(): BelongsTo

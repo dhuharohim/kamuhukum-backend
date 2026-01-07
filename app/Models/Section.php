@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Services\StorageService;
 
 class Section extends Model
 {
@@ -21,7 +22,8 @@ class Section extends Model
         if (empty($this->preview))
             return;
 
-        return config('app.url') . 'storage/' . $this->preview;
+        $storage = new StorageService();
+        return $storage->cdnUrl($this->preview);
     }
 
     public function contents(): HasMany

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Services\StorageService;
 
 class ArticleFile extends Model
 {
@@ -43,6 +44,7 @@ class ArticleFile extends Model
         if (empty($this->file_path))
             return;
 
-        return config('app.url') . 'storage/' . $this->file_path;
+        $storage = new StorageService();
+        return $storage->cdnUrl($this->file_path);
     }
 }
