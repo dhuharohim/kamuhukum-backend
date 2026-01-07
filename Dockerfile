@@ -24,4 +24,17 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 ENV PORT=80
 EXPOSE ${PORT}
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s CMD curl -fsS http://localhost:${PORT}/ || exit 1
-CMD ["/bin/bash","-lc","PORT=${PORT:-80}; if [ \"$PORT\" != \"80\" ]; then sed -ri \"s/^Listen 80/Listen ${PORT}/\" /etc/apache2/ports.conf; sed -ri \"s/<VirtualHost \\*:80>/<VirtualHost *:${PORT}>/\" /etc/apache2/sites-available/000-default.conf; fi; php artisan config:cache || true; php artisan storage:link || true; apache2-foreground"]
+CMD ["/bin/bash", "-lc", " \
+    PORT=${PORT:-80}; \
+    if [ \"$PORT\" != \"80\" ]; then \
+        sed -ri \"s/^Listen 80/Listen ${PORT}/\" /etc/apache2/ports.conf; \
+        sed -ri \"s/<VirtualHost \\*:80>/<VirtualHost *:${PORT}>/\" /etc/apache2/sites-available/000-default.conf; \
+    fi; \
+    # 1. Clear the 'fake' folder and create a fresh symbolic link
+    rm -rf public/storage && php artisan storage:link; \
+    # 2. Fix permissions for the mounted volume
+    chown -R www-data:www-data /var/www/html/storage; \
+    # 3. Cache and start
+    php artisan config:cache || true; \
+    apache2-foreground \
+"]
