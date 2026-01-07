@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('articles', function (Blueprint $table) {
-            $table->dropColumn('editor_id');
-            $table->dropColumn('assigned_on');
+            if (Schema::hasColumn('articles', 'editor_id')) {
+                $table->dropColumn('editor_id');
+            }
+            if (Schema::hasColumn('articles', 'assigned_on')) {
+                $table->dropColumn('assigned_on');
+            }
         });
     }
 
@@ -23,8 +27,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('articles', function (Blueprint $table) {
-            $table->foreignId('editor_id')->constrained('users')->onDelete('cascade');
-            $table->timestamp('assigned_on')->nullable();
+            if (!Schema::hasColumn('articles', 'editor_id')) {
+                $table->foreignId('editor_id')->constrained('users')->onDelete('cascade');
+            }
+            if (!Schema::hasColumn('articles', 'assigned_on')) {
+                $table->timestamp('assigned_on')->nullable();
+            }
         });
     }
 };
