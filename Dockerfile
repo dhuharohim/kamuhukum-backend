@@ -1,5 +1,6 @@
-FROM composer:2 AS vendor
+FROM php:8.2-cli AS vendor
 WORKDIR /app
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-progress --no-interaction
 
@@ -13,7 +14,7 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 WORKDIR /var/www/html
 COPY . /var/www/html
 COPY --from=vendor /app/vendor /var/www/html/vendor
-COPY --from=vendor /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer dump-autoload -o
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 EXPOSE 80
